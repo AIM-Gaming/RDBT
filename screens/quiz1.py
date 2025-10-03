@@ -32,7 +32,7 @@ class QuizOne(Screen):
         self.add_widget(self.layout)
         
         self.background_image = BlurredImage(
-            source=os.path.join(TEMP_ASSETS_DIR, "images", "UnfinishedBG.png"),
+            source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"),
             allow_stretch=True, keep_ratio=True
         )
         if not os.path.exists(self.background_image.source):

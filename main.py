@@ -2,8 +2,9 @@ from assets import extract_video, extract_assets
 from app import BibleTriviaApp
 
 # Pressed pause button isn't the right size
+# Adjust carousel selector
 
-# Just got my game back from the nearly 2-month old backup ;-;
+# Note: When the CarouselSelector's width is increased, it remains that way until the app is closed. Investigate later.
 
 if __name__ == "__main__":
     extract_video()

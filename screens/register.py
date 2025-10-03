@@ -21,8 +21,7 @@ class RegisterScreen(Screen):
         
         layout = BoxLayout(orientation="vertical", padding=50, spacing=20)
         
-        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.2),
-                                        pos_hint={"center_x": 0.5, "y": 0.2})
+        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.2})
         
         self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.4})
 

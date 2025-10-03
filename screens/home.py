@@ -4,7 +4,6 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-# from kivy.core.text import LabelBase
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
@@ -31,7 +30,7 @@ class HomeScreen(Screen):
         self.player = None
 
         # Ensure dimensions are 1920x1290
-        self.background_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "UnfinishedBG.png"), allow_stretch=True, keep_ratio=True)
+        self.background_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=True)
 
         if not os.path.exists(self.background_image.source):
             debug_print("Background image not found.")
@@ -272,7 +271,6 @@ class HomeScreen(Screen):
                                  border=(0, 0, 0, 0)
                                  )
             play_button.bind(on_release=self.confirm_restart)
-            debug_print(f"Play button image exists: {os.path.exists(play_button.background_normal)}")
             self.button_box.add_widget(play_button)
             
             debug_print(f"Has progress: {has_progress}, Game over: {self.quiz_manager.game_over}, Left the game: {self.has_left_game_this_session}")

@@ -47,7 +47,7 @@ class LoginScreen(Screen):
         home_button.bind(on_release=self.go_back)
         layout.add_widget(home_button)
         
-        layout.add_widget(Label(text="Login to Bible Trivia", font_size=24, font_name="BibleTriviaFont1"))
+        layout.add_widget(Label(text="Login to Bible Trivia", font_size=24))
         layout.add_widget(self.username_input)
         layout.add_widget(self.password_input)
         layout.add_widget(login_button)

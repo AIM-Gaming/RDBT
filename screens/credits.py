@@ -3,14 +3,14 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-# from kivy.core.text import LabelBase
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 
 import os
 
 from widgets.clickable_label import ClickableLabel
-from utils import TEMP_ASSETS_DIR
+from widgets.blurred_image import BlurredImage
+from utils import TEMP_ASSETS_DIR, debug_print
 
 
 class CreditsScreen(Screen):
@@ -19,6 +19,12 @@ class CreditsScreen(Screen):
         
         self.layout = FloatLayout()  # Float layout to hold everything
         self.add_widget(self.layout)
+
+        self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=True)
+
+        if not os.path.exists(self.background_image.source):
+            debug_print("Background image not found.")
+        self.layout.add_widget(self.background_image, index=1)
         
         # Define the scroll view (SV)
         self.scroll_view = ScrollView(size_hint=(0.8, 0.8), pos_hint={"center_x": 0.5, "center_y": 0.5})

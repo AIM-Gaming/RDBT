@@ -4,8 +4,8 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-# from kivy.core.text import LabelBase
 from kivy.clock import Clock
+from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.slider import Slider
@@ -17,6 +17,7 @@ import os
 from db import get_db_connection
 from utils import debug_print, update_music_volume, update_sfx_volume, TEMP_ASSETS_DIR
 from widgets.carousel_selector import CarouselSelector
+from widgets.blurred_image import BlurredImage
 
 
 class OptionsScreen(Screen):
@@ -25,14 +26,26 @@ class OptionsScreen(Screen):
         
         self.layout = FloatLayout()
         self.add_widget(self.layout)
+
+        self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=True)
+
+        if not os.path.exists(self.background_image.source):
+            debug_print("Background image not found.")
+        self.layout.add_widget(self.background_image, index=1)
+
+        self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsScreenScroll.png"), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        self.layout.add_widget(self.scroll_image, index=0)
+
+        self.papyrus_container = FloatLayout(size=(1000, 1100), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.5})        
         
-        self.scroll_view = ScrollView(size_hint=(0.9, 0.8), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        self.scroll_view = ScrollView(size_hint=(0.9, 0.7), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        self.papyrus_container.add_widget(self.scroll_view)
         
         self.settings_layout = BoxLayout(orientation="vertical", spacing=20, size_hint_y=None, padding=[20, 20])
         self.settings_layout.bind(minimum_height=self.settings_layout.setter("height"))
+
         self.scroll_view.add_widget(self.settings_layout)
-        
-        self.layout.add_widget(self.scroll_view)
+        self.layout.add_widget(self.papyrus_container)
         
         # Widgets
         self.master_volume = None
@@ -116,13 +129,13 @@ class OptionsScreen(Screen):
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=50))
         
         # Save Button
-        self.save_button = Button(text="Save Settings", size_hint=(None, None), 
+        self.save_button = Button(size_hint=(None, None), 
                                   size=(200, 100), border=(0, 0, 0, 0),
-                                  pos_hint={"center_x": 0.5, "y": 0.05},
+                                  pos_hint={"center_x": 0.5, "y": 0.07},
                                   background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "SaveButton.png"),
                                   background_down=os.path.join(TEMP_ASSETS_DIR, "images", "SaveButtonPressed.png"))
         self.save_button.bind(on_release=self.save_settings)
-        self.layout.add_widget(self.save_button)
+        self.papyrus_container.add_widget(self.save_button)
         self.layout.add_widget(Widget())
         
         back_button = Button(size=(150, 150), size_hint=(None, None), pos_hint={"left": 1, "top": 1},
