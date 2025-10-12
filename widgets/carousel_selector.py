@@ -86,7 +86,7 @@ class CarouselSelector(BoxLayout):
         
         parent_center = self.parent.to_window(self.parent.center_x, self.parent.center_y)[0]
         display_center = self.display.to_window(self.display.center_x, self.display.center_y)[0]
-        shift = (parent_center - display_center) / 2
+        shift = (parent_center - display_center) / 2 # Good enough for now, recalculate later
 
         self.x += shift
         debug_print(F"Shifted by {shift} pixels")
