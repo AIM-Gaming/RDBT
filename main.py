@@ -2,6 +2,9 @@ from assets import extract_video, extract_assets
 from app import BibleTriviaApp
 
 # Pressed pause button isn't the right size
+# Update login and register pages
+# Debug game logic and visuals
+# Add api.py and integrate it
 # Carousel centering is good enough for now, recalculate later
 
 # Note: When the CarouselSelector's width is increased, it remains that way until the app is closed. Investigate later.
