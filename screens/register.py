@@ -1,8 +1,7 @@
 from kivy.app import App
-from kivy.uix.screenmanager import Screen, SlideTransition
+from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
-# from kivy.core.text import LabelBase
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
@@ -29,13 +28,13 @@ class RegisterScreen(Screen):
 
         self.first_name_input = TextInput(hint_text="First Name", multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.8})
         
-        register_button = Button(size=(360, 203), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 0.9},
+        register_button = Button(size=(360, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 0.9},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
                                  border=(0, 0, 0, 0))
         register_button.bind(on_release=self.register)
         
-        open_login_button = Button(size=(360, 203), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 1},
+        open_login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 1},
                                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButton.png"),
                                    background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButtonPressed.png"),
                                    border=(0, 0, 0, 0))
@@ -90,12 +89,12 @@ class RegisterScreen(Screen):
     # noinspection PyUnusedLocal
     def open_login(self, instance):
         debug_print("Transitioning to LoginScreen()")
-        self.manager.transition = SlideTransition(direction='right')
+        self.manager.transition = NoTransition()
         self.manager.current = "LoginScreen"
     
     # noinspection PyUnusedLocal
     def go_back(self, instance):
-        self.manager.transition = SlideTransition(direction='right')
+        self.manager.transition = NoTransition()
         self.manager.current = "HomeScreen"
     
     def on_leave(self):

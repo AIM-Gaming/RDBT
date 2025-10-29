@@ -8,6 +8,7 @@ from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
+from kivy.graphics import Color, Rectangle
 
 import os
 from typing import Dict, Tuple, Optional
@@ -28,13 +29,13 @@ class LoginScreen(Screen):
         
         self.home_screen = None
         
-        login_button = Button(size=(360, 203), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 0.9},
+        login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 0.9},
                               background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButton.png"),
                               background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButtonPressed.png"),
                               border=(0, 0, 0, 0))
         login_button.bind(on_release=self.login)
         
-        register_button = Button(size=(360, 203), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 1},
+        register_button = Button(size=(360, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 1},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
                                  border=(0, 0, 0, 0))
