@@ -20,13 +20,13 @@ class RegisterScreen(Screen):
         
         layout = BoxLayout(orientation="vertical", padding=50, spacing=20)
         
-        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.2})
+        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.2})
         
-        self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.4})
+        self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.4})
 
-        self.confirm_password_input = TextInput(hint_text="Confirm Password", password=True, multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.6})
+        self.confirm_password_input = TextInput(hint_text="Confirm Password", password=True, multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.6})
 
-        self.first_name_input = TextInput(hint_text="First Name", multiline=False, size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "y": 0.8})
+        self.first_name_input = TextInput(hint_text="First Name", multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.8})
         
         register_button = Button(size=(360, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 0.9},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),

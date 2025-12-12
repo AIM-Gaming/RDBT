@@ -1,9 +1,9 @@
 from kivy.app import App
 from kivy.uix.screenmanager import Screen, FadeTransition, SlideTransition
 from kivy.uix.button import Button
-from kivy.uix.image import Image
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
@@ -29,12 +29,20 @@ class HomeScreen(Screen):
         self.music = None
         self.player = None
 
+        from kivy.core.image import Image as CoreImage
         # Ensure dimensions are 1920x1290
-        self.background_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=True)
+        self.background_texture = CoreImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
 
-        if not os.path.exists(self.background_image.source):
-            debug_print("Background image not found.")
-        self.layout.add_widget(self.background_image, index=1)
+        self.bg_color = None
+        self.bg_rect = None
+
+        with self.layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            self.bg_color = Color(1, 1, 1, 1)  # White color
+            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
+        
+        self.layout.bind(pos=self.update_bg, size=self.update_bg)
+        self.update_bg(None, None)
         
         self.quiz_screen = None
         self.quiz_manager = QuizManager(bible_version=App.get_running_app().user_settings.get("bible_version", "NIV"))
@@ -79,6 +87,11 @@ class HomeScreen(Screen):
         self.update_button_box()
         self.layout.add_widget(Widget(size_hint=(1, 0.1)))
 
+    def update_bg(self, instance, value):
+        """Forces the background to fill the whole screen"""
+        self.bg_rect.texture = self.background_texture
+        self.bg_rect.size = self.layout.size
+        self.bg_rect.pos = self.layout.pos
     
     def on_enter(self, *args):
         self.quiz_screen = self.manager.get_screen("QuizOne")
@@ -265,7 +278,8 @@ class HomeScreen(Screen):
                     pos_hint={"x": 0.7, "center_y": 0.5}  # Align to the right, center vertically
                 )
             
-            play_button = Button(size_hint=(1, 0.3), height=50, background_color=(1, 1, 1, 1),
+            play_button = Button(size_hint_y = 0.3, size_hint_x=None, width=320,
+                                 height=50, background_color=(1, 1, 1, 1),
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButtonPressed.png"),
                                  border=(0, 0, 0, 0)

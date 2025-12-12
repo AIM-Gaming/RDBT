@@ -21,11 +21,12 @@ class LoginScreen(Screen):
         super().__init__(**kwargs)
         
         layout = BoxLayout(orientation="vertical", padding=50, spacing=20)
+
+        self.login_label = Label(text="Login to Bible Trivia", font_size=40, pos_hint={"top": 0.9, "center_x": 0.5})
         
-        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.25),
-                                        pos_hint={"center_x": 0.5, "y": 0.4})
-        self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(0.4, 0.25),
-                                        pos_hint={"center_x": 0.5, "y": 0.6})
+        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.4})
+
+        self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.6})
         
         self.home_screen = None
         
@@ -48,13 +49,17 @@ class LoginScreen(Screen):
         home_button.bind(on_release=self.go_back)
         layout.add_widget(home_button)
         
-        layout.add_widget(Label(text="Login to Bible Trivia", font_size=24))
+        layout.add_widget(self.login_label)  # Something is putting a ceiling on this label, also binding the input fields
         layout.add_widget(self.username_input)
         layout.add_widget(self.password_input)
         layout.add_widget(login_button)
         layout.add_widget(register_button)
         
         self.add_widget(layout)
+    
+    def update_rect(self, instance, value):
+        self.rect.size = instance.size
+        self.rect.pos = instance.pos
     
     # noinspection PyUnusedLocal
     def login(self, instance):
