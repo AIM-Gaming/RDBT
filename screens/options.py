@@ -27,11 +27,18 @@ class OptionsScreen(Screen):
         self.layout = FloatLayout()
         self.add_widget(self.layout)
 
-        self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=True)
+        self.background_texture = BlurredImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
 
-        if not os.path.exists(self.background_image.source):
-            debug_print("Background image not found.")
-        self.layout.add_widget(self.background_image, index=1)
+        self.bg_color = None
+        self.bg_rect = None
+
+        with self.layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            self.bg_color = Color(1, 1, 1, 1)  # White color
+            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
+        
+        self.layout.bind(pos=self.update_bg, size=self.update_bg)
+        self.update_bg(None, None)
 
         self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsScreenScroll.png"), pos_hint={"center_x": 0.5, "center_y": 0.5})
         self.layout.add_widget(self.scroll_image, index=0)
@@ -57,6 +64,12 @@ class OptionsScreen(Screen):
         self.save_button = None
         
         self.add_options_content()
+
+    def update_bg(self, instance, value):
+        """Forces the background to fill the whole screen"""
+        self.bg_rect.texture = self.background_texture
+        self.bg_rect.size = self.layout.size
+        self.bg_rect.pos = self.layout.pos
     
     def add_options_content(self):
         # Title

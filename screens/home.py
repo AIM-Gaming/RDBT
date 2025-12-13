@@ -261,25 +261,24 @@ class HomeScreen(Screen):
                 SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND time_remaining > 0
             """, (user_id,))
             has_progress = cursor.fetchone()[0] > 0
+
+            BUTTON_HEIGHT = 120
+            BUTTON_SPACING = 20
+            add_resume_button = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session
+            box_height = (BUTTON_HEIGHT * (4 if add_resume_button else 3)) + (BUTTON_SPACING * ((4 if add_resume_button else 3) - 1))
         
             # Expand button layout if resume button is to be added
-            if has_progress and self.quiz_manager.game_over:
-                self.button_box = BoxLayout(
-                    orientation="vertical",
-                    spacing=20,
-                    size_hint=(0.3, 0.6),  # Make it narrower and vertically centered.
-                    pos_hint={"x": 0.7, "center_y": 0.5}  # Align to the right, center vertically
-                )
-            else:
-                self.button_box = BoxLayout(
-                    orientation="vertical",
-                    spacing=20,
-                    size_hint=(0.3, 0.5),  # Make it narrower and vertically centered.
-                    pos_hint={"x": 0.7, "center_y": 0.5}  # Align to the right, center vertically
-                )
+            self.button_box = BoxLayout(
+                orientation="vertical",
+                spacing=20,
+                size_hint_x=0.3,
+                size_hint_y=None, # Original size when no resume button
+                height=box_height,
+                pos_hint={"x": 0.7, "center_y": 0.5}
+            )
             
-            play_button = Button(size_hint_y = 0.3, size_hint_x=None, width=320,
-                                 height=50, background_color=(1, 1, 1, 1),
+            play_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, 
+                                 background_color=(1, 1, 1, 1),
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButtonPressed.png"),
                                  border=(0, 0, 0, 0)
@@ -290,9 +289,9 @@ class HomeScreen(Screen):
             debug_print(f"Has progress: {has_progress}, Game over: {self.quiz_manager.game_over}, Left the game: {self.has_left_game_this_session}")
 
             # Add the resume button if there's progress
-            if has_progress and self.quiz_manager.game_over and self.has_left_game_this_session:  # One of these conditions isn't being met when it should
+            if add_resume_button:  # One of these conditions isn't being met when it should
                 debug_print("Adding resume button")
-                resume_button = Button(size_hint=(1, 0.3), height=50, opacity=100,
+                resume_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
                                        background_color=(1, 1, 1, 1),
                                        background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeButton.png"),
                                        background_down=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeButtonPressed.png"),
@@ -303,7 +302,7 @@ class HomeScreen(Screen):
             else:
                 debug_print("No progress detected, skipping resume button.")
             
-            options_button = Button(size_hint=(1, 0.3), height=50, opacity=100,
+            options_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
                                     background_color=(1, 1, 1, 1),
                                     background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsButton.png"),
                                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsButtonPressed.png"),
@@ -312,7 +311,7 @@ class HomeScreen(Screen):
             options_button.bind(on_release=self.open_options)
             self.button_box.add_widget(options_button)
             
-            credits_button = Button(size_hint=(1, 0.3), height=50, opacity=100,
+            credits_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
                                     background_color=(1, 1, 1, 1),
                                     background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "CreditsButton.png"),
                                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "CreditsButtonPressed.png"),

@@ -31,13 +31,18 @@ class QuizOne(Screen):
         self.layout = FloatLayout()
         self.add_widget(self.layout)
         
-        self.background_image = BlurredImage(
-            source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"),
-            allow_stretch=True, keep_ratio=True
-        )
-        if not os.path.exists(self.background_image.source):
-            debug_print("Background image not found.")
-        self.layout.add_widget(self.background_image, index=1)
+        self.background_texture = BlurredImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
+
+        self.bg_color = None
+        self.bg_rect = None
+
+        with self.layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            self.bg_color = Color(1, 1, 1, 1)  # White color
+            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
+        
+        self.layout.bind(pos=self.update_bg, size=self.update_bg)
+        self.update_bg(None, None)
         
         # Initialize state
         self.quiz_manager = QuizManager(bible_version=App.get_running_app().user_settings.get("bible_version", "NIV"))
@@ -64,6 +69,12 @@ class QuizOne(Screen):
         
         # UI Elements Setup (labels, buttons etc.)...
         self._setup_ui()
+    
+    def update_bg(self, instance, value):
+        """Forces the background to fill the whole screen"""
+        self.bg_rect.texture = self.background_texture
+        self.bg_rect.size = self.layout.size
+        self.bg_rect.pos = self.layout.pos
     
     def _setup_ui(self):
         # Timer Label

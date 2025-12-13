@@ -20,11 +20,18 @@ class CreditsScreen(Screen):
         self.layout = FloatLayout()  # Float layout to hold everything
         self.add_widget(self.layout)
 
-        self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=True)
+        self.background_texture = BlurredImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
 
-        if not os.path.exists(self.background_image.source):
-            debug_print("Background image not found.")
-        self.layout.add_widget(self.background_image, index=1)
+        self.bg_color = None
+        self.bg_rect = None
+
+        with self.layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            self.bg_color = Color(1, 1, 1, 1)  # White color
+            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
+        
+        self.layout.bind(pos=self.update_bg, size=self.update_bg)
+        self.update_bg(None, None)
         
         # Define the scroll view (SV)
         self.scroll_view = ScrollView(size_hint=(0.8, 0.8), pos_hint={"center_x": 0.5, "center_y": 0.5})
@@ -37,6 +44,12 @@ class CreditsScreen(Screen):
         self.layout.add_widget(self.scroll_view)  # Add scroll view to the float layout
         
         self.add_credits_content()  # Add credits content
+
+    def update_bg(self, instance, value):
+        """Forces the background to fill the whole screen"""
+        self.bg_rect.texture = self.background_texture
+        self.bg_rect.size = self.layout.size
+        self.bg_rect.pos = self.layout.pos
     
     def add_credits_content(self):
         # Title

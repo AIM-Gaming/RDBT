@@ -1,11 +1,10 @@
 from kivy.uix.image import Image
+from kivy.core.image import Image as CoreImage
 from PIL import Image as PILImage, ImageFilter
 
 
-class BlurredImage(Image):  # Makes image small
+class BlurredImage(CoreImage):
     def __init__(self, source, **kwargs):
-        super().__init__(**kwargs)
-        
         # Load and blur the image
         img = PILImage.open(source)
         img = img.filter(ImageFilter.GaussianBlur(radius=5))
@@ -14,5 +13,5 @@ class BlurredImage(Image):  # Makes image small
         blurred_path = "blurred_bg.jpg"
         img.save(blurred_path)
         
-        # Set the blurred image as the source
-        self.source = blurred_path
+        # Initialize parent with the blurred image path
+        super().__init__(blurred_path, **kwargs)
