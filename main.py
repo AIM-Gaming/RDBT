@@ -1,12 +1,15 @@
 from assets import extract_video, extract_assets
 from app import BibleTriviaApp
 
-# Right-clicking on home screen draws red dots that prevent widget functions unless they are clicked again
-# Update login and register pages (some kind of ceiling on login label which binds it and the input fields from reaching a certain height)
-# Debug game logic and visuals (check resume_game, reset, and home.py)
+# Debug game logic and visuals (check resume_game, reset, and home.py, 
+    # especially confirm_restart's popup)
 # Add api.py and integrate it
 # Carousel centering is good enough for now, recalculate later
-# Note: When the CarouselSelector's width is increased, it remains that way until the app is closed. Investigate later.
+# Note: When the CarouselSelector's width is increased, it remains that way until the app is closed.
+#  Investigate later.
+# Right-clicking on home screen draws red dots that prevent widget functions unless they are clicked again
+    # Low priority - likely just smtn to do with Kivy's backend
+
 
 if __name__ == "__main__":
     extract_video()

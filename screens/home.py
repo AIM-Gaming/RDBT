@@ -347,40 +347,42 @@ class HomeScreen(Screen):
             if has_progress:
                 debug_print("Progress exists")
                 content = BoxLayout(orientation="vertical")
-                content.add_widget(Label(
-                    text="Unresolved game found. Continue?"
-                ))
-                vbox = BoxLayout(orientation="vertical", size_hint_y=1)
-                vbox.add_widget(Widget(size_hint_y=1))
-                button_box = BoxLayout(orientation="horizontal", spacing=20, size_hint_y=None, height=180)
-                button_box.add_widget(Widget(size_hint_x=1))
+                content.add_widget(Label(text="Unresolved game found. Continue?"))
+
+                BUTTON_HEIGHT = 180
+                BUTTON_WIDTH = 320
+                BUTTON_SPACING = 20
+
+                button_box = BoxLayout(orientation="horizontal", spacing=BUTTON_SPACING, padding=5, size_hint_y=None, height=BUTTON_HEIGHT)
+                button_box.add_widget(Widget(size_hint_x=1)) # Left spacer
+                # Add buttons to the popup
                 button_box.add_widget(Button(
-                    size_hint=(None, None), size=(320, 180),
+                    size_hint=(None, None), size=(BUTTON_WIDTH, BUTTON_HEIGHT),
                     background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "NewGameButton.png"), 
                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "NewGameButtonPressed.png"),
                     border=(0, 0, 0, 0),
                     on_release=lambda btn: (popup.dismiss(), self.new_game(btn))
                 ))
                 button_box.add_widget(Button(
-                    size_hint=(None, None), size=(320, 180),
+                    size_hint=(None, None), size=(BUTTON_WIDTH, BUTTON_HEIGHT),
                     background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeGameButton.png"), 
                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeGameButtonPressed.png"),
                     border=(0, 0, 0, 0),
                     on_release=lambda btn: (popup.dismiss(), self.resume_game(btn))
                 ))
-                button_box.add_widget(Button(
-                    size_hint=(None, None), size=(320, 180),
+                cancel_vbox = BoxLayout(orientation="vertical", size_hint=(None, None), width=215, height=BUTTON_HEIGHT)
+                cancel_vbox.add_widget(Widget(size_hint_y=1))
+                cancel_vbox.add_widget(Button(
+                    size_hint=(None, None), size=(215, 70),
                     background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "CancelButton.png"), 
                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "CancelButtonPressed.png"),
                     border=(0, 0, 0, 0),
                     on_release=lambda btn: popup.dismiss()
                 ))
-                button_box.add_widget(Widget(size_hint_x=1))
-
-                vbox.add_widget(button_box)
-                vbox.add_widget(Widget(size_hint_y=1))
-
-                content.add_widget(vbox)
+                cancel_vbox.add_widget(Widget(size_hint_y=1))
+                button_box.add_widget(cancel_vbox)
+                button_box.add_widget(Widget(size_hint_x=1)) # Right spacer
+                content.add_widget(button_box)
 
                 popup = Popup(title="", content=content, size_hint=(0.6, 0.27))
                 popup.open()  # Prompt the user with the decision to start a new game or resume the previous one
