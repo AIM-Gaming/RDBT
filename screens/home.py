@@ -262,7 +262,8 @@ class HomeScreen(Screen):
             """, (user_id,))
             has_progress = cursor.fetchone()[0] > 0
 
-            BUTTON_HEIGHT = 120
+            BUTTON_WIDTH = 320
+            BUTTON_HEIGHT = 180
             BUTTON_SPACING = 20
             add_resume_button = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session
             box_height = (BUTTON_HEIGHT * (4 if add_resume_button else 3)) + (BUTTON_SPACING * ((4 if add_resume_button else 3) - 1))
@@ -271,10 +272,10 @@ class HomeScreen(Screen):
             self.button_box = BoxLayout(
                 orientation="vertical",
                 spacing=20,
-                size_hint_x=0.3,
-                size_hint_y=None, # Original size when no resume button
+                size_hint=(None, None),
+                width=BUTTON_WIDTH,
                 height=box_height,
-                pos_hint={"x": 0.7, "center_y": 0.5}
+                pos_hint={"right": 0.95, "center_y": 0.5}
             )
             
             play_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, 
