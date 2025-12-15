@@ -2,6 +2,7 @@ from kivy.app import App
 from kivy.properties import StringProperty, NumericProperty, ListProperty
 from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
 from kivy.uix.button import Button
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 # from kivy.core.text import LabelBase
 from kivy.clock import Clock
@@ -20,38 +21,56 @@ class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
-        layout = BoxLayout(orientation="vertical", padding=50, spacing=20)
+        layout = FloatLayout()
 
-        self.login_label = Label(text="Login to Bible Trivia", font_size=40, pos_hint={"top": 0.9, "center_x": 0.5})
+        # CONSTANTS
+        FIELD_WIDTH = 700
+        FIELD_HEIGHT = 60
+        FIELD_SPACING = 20
+        box_height = FIELD_HEIGHT * 2 + FIELD_SPACING
+
+        # INPUT FIELDS (Middle Position)
+        input_box = BoxLayout(
+            orientation="vertical",
+            size_hint=(None, None),
+            width=FIELD_WIDTH, height=box_height,
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            spacing=FIELD_SPACING
+        )
+
+        self.login_label = Label(text="Login to Bible Trivia", font_size=40, pos_hint={"center_y": 0.75, "center_x": 0.5})
         
-        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.4})
+        self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_x": 0.5, "top": 1})
+        input_box.add_widget(self.username_input)
 
-        self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(0.4, 0.1), pos_hint={"center_x": 0.5, "y": 0.6})
+        self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(None, None), 
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_x": 0.5, "bottom": 1})
+        input_box.add_widget(self.password_input)
         
         self.home_screen = None
         
-        login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 0.9},
+        login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.25},
                               background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButton.png"),
                               background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButtonPressed.png"),
                               border=(0, 0, 0, 0))
         login_button.bind(on_release=self.login)
         
-        register_button = Button(size=(360, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "bottom": 1},
+        register_button = Button(size=(288, 94.8), size_hint=(None, None), pos_hint={"center_x": 0.9, "top": 0.95},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
                                  border=(0, 0, 0, 0))
         register_button.bind(on_release=self.open_registration)
         
-        home_button = Button(size=(150, 150), size_hint=(None, None), pos_hint={"left": 1, "top": 1},
+        home_button = Button(size=(150, 150), size_hint=(None, None), pos_hint={"center_x": 0.05, "top": 0.95},
                              background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "BackButton.png"),
                              background_down=os.path.join(TEMP_ASSETS_DIR, "images", "BackButtonPressed.png"),
                              border=(0, 0, 0, 0))
         home_button.bind(on_release=self.go_back)
+
         layout.add_widget(home_button)
-        
-        layout.add_widget(self.login_label)  # Something is putting a ceiling on this label, also binding the input fields
-        layout.add_widget(self.username_input)
-        layout.add_widget(self.password_input)
+        layout.add_widget(self.login_label)
+        layout.add_widget(input_box)
         layout.add_widget(login_button)
         layout.add_widget(register_button)
         
