@@ -1,8 +1,7 @@
 from assets import extract_video, extract_assets
 from app import BibleTriviaApp
 
-# Debug game logic and visuals (check resume_game, reset, and home.py, 
-    # especially confirm_restart's popup)
+# Debug game logic and visuals (check resume_game, reset, and home.py)
 # Add api.py and integrate it
 # Carousel centering is good enough for now, recalculate later
 # Note: When the CarouselSelector's width is increased, it remains that way until the app is closed.

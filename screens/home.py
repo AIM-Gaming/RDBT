@@ -484,4 +484,3 @@ class HomeScreen(Screen):
         play_sfx("button_press_1.mp3")
         self.manager.transition = SlideTransition(direction='left')
         self.manager.current = "LoginScreen"
-

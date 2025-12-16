@@ -110,7 +110,6 @@ class RegisterScreen(Screen):
     
     # noinspection PyUnusedLocal
     def open_login(self, instance):
-        debug_print("Transitioning to LoginScreen()")
         self.manager.transition = NoTransition()
         self.manager.current = "LoginScreen"
     
