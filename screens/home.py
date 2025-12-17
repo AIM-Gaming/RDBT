@@ -342,9 +342,10 @@ class HomeScreen(Screen):
                             SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND time_remaining > 0
                         """, (user_id,))
             has_progress = cursor.fetchone()[0] > 0
+            show_popup = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session  # Same logic as resume button
             
             # If there is progress
-            if has_progress:
+            if show_popup:
                 debug_print("Progress exists")
                 content = BoxLayout(orientation="vertical")
                 content.add_widget(Label(text="Unresolved game found. Continue?"))

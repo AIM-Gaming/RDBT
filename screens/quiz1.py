@@ -132,7 +132,7 @@ class QuizOne(Screen):
         self.layout.add_widget(self.pause_button)
         
         # Start button
-        self.start_button = Button(size_hint=(0.2, 0.1), pos_hint={"center_x": 0.5, "center_y": 0.5},
+        self.start_button = Button(size_hint=(None, None), size=(320, 180), pos_hint={"center_x": 0.5, "center_y": 0.5},
                                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "StartButton.png"),
                                    background_down=os.path.join(TEMP_ASSETS_DIR, "images", "StartButtonPressed.png"),
                                    border=(0, 0, 0, 0), opacity=100)
@@ -140,8 +140,6 @@ class QuizOne(Screen):
         self.layout.add_widget(self.start_button)
     
     def go_home(self, instance):
-        home_page = self.manager.get_screen("HomeScreen")
-        home_page.has_left_game_this_session = True
         self.manager.transition = NoTransition()
         self.manager.current = "HomeScreen"
     
@@ -541,7 +539,6 @@ class QuizOne(Screen):
             high_score = result[0] if result is not None else 0
             
             self.result_label.pos_hint = {"y": 0.5}
-            self.result_label.text = (f"Read your Bible.\n Your score: {score}\n Lives: {lives} \n High Score: {high_score}")
             
             self.quit_button.pos_hint = {"center_x": 0.5, "y": 0.1}
             self.quit_button.size = (150, 150)
@@ -550,16 +547,16 @@ class QuizOne(Screen):
             self.quit_button.background_normal = os.path.join(TEMP_ASSETS_DIR, "images", "HomeButton.png")
             self.quit_button.background_down = os.path.join(TEMP_ASSETS_DIR, "images", "HomeButtonPressed.png")
             
-            if lives <= 0:
-                self.result_label.text = (
-                    f"Read your Bible.\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}"
-                )
-            
-            elif bank_index == 4 and score < 230:
+            if lives <= 0:  # If plauer ran out of lives
+                self.result_label.text = (f"Read your Bible.\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}")
+            elif bank_index == 4 and score < 230:  # If player didn't meet score threshold for round 5
                 self.result_label.text = f"Quiz completed!\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}\nYou need at least 230 points to advance to Round 5!"
-            
-            else:
+            else:  # Quiz completed successfully
                 self.result_label.text = f"Quiz completed!\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}"
+
+            # Prevent the resume button from appearing
+            home_screen = self.manager.get_screen("HomeScreen")
+            home_screen.has_left_game_this_session = False
             
             # Update high score if beaten
             if score > high_score:
@@ -597,9 +594,7 @@ class QuizOne(Screen):
                 self.timer_event.cancel()
             
             content = BoxLayout(orientation="vertical")
-            content.add_widget(Label(
-                text="Are you sure you want to quit? Your progress will be saved.",
-                ))
+            content.add_widget(Label(text="Are you sure you want to quit? Your progress will be saved."))
 
             self._quit_confirmed = False
 
@@ -697,6 +692,7 @@ class QuizOne(Screen):
                     WHERE user_id = %s
                 """, (1, 0, 0, 4, 30, 6, user_id))
                 conn.commit()
+                debug_print(f"Progress reset!\n\tBank index: {q.current_bank_index}\n\tQuestion index: {q.current_question_index}\n\tScore: {q.score}\n\tLives: {q.lives}\n\tTime remaining: {q.time_remaining}\n\tLast question ID (should be none): {q.last_question_id}\n\tQuestion ID list (should be none): {q.used_question_ids}")
             except mysql.connector.Error as e:
                 debug_print(f"Database error in reset(): {e}")
             finally:
@@ -711,4 +707,3 @@ class QuizOne(Screen):
         self.quit_button.size = (150, 150)
         self.quit_button.background_normal = os.path.join(TEMP_ASSETS_DIR, "images", "HomeButton.png")
         self.quit_button.background_down = os.path.join(TEMP_ASSETS_DIR, "images", "HomeButtonPressed.png")
-
