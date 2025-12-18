@@ -149,6 +149,7 @@ class HomeScreen(Screen):
             self.logout_button.size = (0, 0)
             self.logout_button.pos_hint = {"center_x": -1, "top": 0.9}
         
+        debug_print(f"Lives: {self.quiz_manager.lives} | Lives display: {self.quiz_screen.lives_image.source}")
         if self.player is None:
             Clock.schedule_once(lambda dt: self.play_music(music_file=current_app.user_settings['background_music']), 0.5)
     
@@ -389,7 +390,9 @@ class HomeScreen(Screen):
                 popup.open()  # Prompt the user with the decision to start a new game or resume the previous one
             else:
                 debug_print("There is no progress")
-                self.quiz_screen.reset(None)  # Reset the state of the quiz screen
+                self.quiz_screen.reset(True)  # Reset the state of the quiz screen
+                self.quiz_screen.update_lives_display()  # Ensure lives display is updated
+                debug_print(f"Lives: {self.quiz_manager.lives} | Lives display after reset: {self.quiz_screen.lives_image.source}")
                 self.manager.transition = FadeTransition()
                 self.manager.current = "QuizOne"  # If there's no progress, then just switch to the quiz screen.
         

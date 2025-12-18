@@ -140,6 +140,10 @@ class QuizOne(Screen):
         self.layout.add_widget(self.start_button)
     
     def go_home(self, instance):
+        if self.quiz_manager.game_over and self.quiz_manager.lives == 0:
+            debug_print("End of game. Returning to home screen.")
+            self.reset(reset_db=True)
+            self.update_lives_display()
         self.manager.transition = NoTransition()
         self.manager.current = "HomeScreen"
     
@@ -248,14 +252,14 @@ class QuizOne(Screen):
         q = self.quiz_manager
         
         if q.current_question_index >= len(q.questions):
-            if q.current_bank_index == 4:
-                if q.score < 230:
+            if q.current_bank_index == 4:  # If the user is at the end of round 4
+                if q.score < 230:   # And hasn't met the score threshold
                     q.game_over = True
                     self.check_game_over()
-                else:
+                else:  # User met the score threshold, allow round 5
                     self.quiz_manager.num_questions_per_round = 15
                     self.next_round()
-            else:
+            else:  # Move to the next round if not at round 4
                 conn, cursor = get_db_connection()
                 cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
                 last_round = cursor.fetchone()[0]
@@ -478,6 +482,8 @@ class QuizOne(Screen):
             debug_print(f"Scripture references: {scripture_references}")
             
             self.result_label.text += f" [{' | '.join(scripture_references)}]"
+        elif result["is_correct"]:
+            debug_print("No scripture reference needed for correct answer")
         else:
             debug_print("No scripture reference exists")
         
@@ -539,6 +545,8 @@ class QuizOne(Screen):
             high_score = result[0] if result is not None else 0
             
             self.result_label.pos_hint = {"y": 0.5}
+
+            
             
             self.quit_button.pos_hint = {"center_x": 0.5, "y": 0.1}
             self.quit_button.size = (150, 150)
@@ -590,6 +598,7 @@ class QuizOne(Screen):
     def confirm_quit(self, *args):
         in_progress = (not self.quiz_manager.game_over)
         if in_progress:
+            debug_print("Confirming quit during an in-progress game.")
             if self.timer_event:
                 self.timer_event.cancel()
             
@@ -634,7 +643,15 @@ class QuizOne(Screen):
             
             popup.bind(on_dismiss=on_popup_dismiss)
             popup.open()
+        elif not in_progress and self.quiz_manager.lives == 0:
+            debug_print("End of game. Returning to home screen.")
+            self.reset(reset_db=True)
+            home_page = self.manager.get_screen("HomeScreen")
+            home_page.update_button_box()
+            self.manager.transition = FadeTransition()
+            self.manager.current = "HomeScreen"
         else:
+            debug_print("Returning to home screen before starting quiz.")
             home_page = self.manager.get_screen("HomeScreen")
             home_page.update_button_box()
             self.manager.transition = FadeTransition()
@@ -667,7 +684,6 @@ class QuizOne(Screen):
         q.used_question_ids = set()
         
         self.timer_label.text = f"Time remaining: {self.quiz_manager.time_remaining}"
-        self.update_lives_display()
         self.result_label.text = ""
         
         self.timer_label.opacity = 0
@@ -692,13 +708,23 @@ class QuizOne(Screen):
                     WHERE user_id = %s
                 """, (1, 0, 0, 4, 30, 6, user_id))
                 conn.commit()
-                debug_print(f"Progress reset!\n\tBank index: {q.current_bank_index}\n\tQuestion index: {q.current_question_index}\n\tScore: {q.score}\n\tLives: {q.lives}\n\tTime remaining: {q.time_remaining}\n\tLast question ID (should be none): {q.last_question_id}\n\tQuestion ID list (should be none): {q.used_question_ids}")
+
+                q.current_bank_index = 1
+                q.current_question_index = 0
+                q.score = 0
+                q.lives = 4
+                q.time_remaining = 30
+                q.last_question_id = None
+                q.num_questions_per_round = 6
+                q.used_question_ids = set()
+                debug_print(f"Progress reset!\n\tBank index: {q.current_bank_index}\n\tQuestion index: {q.current_question_index}\n\tScore: {q.score}\n\tLives: {q.lives}\n\tTime remaining: {q.time_remaining}\n\tLast question ID (should be none): {q.last_question_id}\n\tQuestion ID list (should be an empty set): {q.used_question_ids}")
             except mysql.connector.Error as e:
                 debug_print(f"Database error in reset(): {e}")
             finally:
                 cursor.close()
                 conn.close()
         
+        self.update_lives_display()
         self.start_button.opacity = 100
         self.start_button.disabled = False
         self.start_button.pos_hint = {"center_x": 0.5, "center_y": 0.5}
