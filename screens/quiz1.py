@@ -191,7 +191,7 @@ class QuizOne(Screen):
                            "FROM user_progress WHERE user_id = %s", (user_id,))
             progress = cursor.fetchone()
             
-            debug_print(f"Time remaining: {progress['time_remaining']}; Score: {progress['score']}")
+            debug_print(f"Time remaining: {progress['time_remaining']} | Score: {progress['score']}")
             if progress and (progress["time_remaining"] < 30 or progress["score"] > 0):
                 self.load_progress(progress)
             else:
@@ -233,7 +233,7 @@ class QuizOne(Screen):
         q.current_question_index = progress["current_question"]
         q.score = progress["score"]
         q.lives = progress["lives"]
-        q.time_remaining = max(progress["time_remaining"], 10)
+        q.time_remaining = max(progress["time_remaining"], 10)  # This loads time properly
         q.last_question_id = progress.get("last_question")
         
         q.load_questions(shuffle=False, limit=None)
@@ -242,7 +242,7 @@ class QuizOne(Screen):
             debug_print(f"Question index {q.current_question_index} exceeds available questions, resetting to 0.")
             q.current_question_index = 0
         
-        self.timer_label.text = f"Time: {q.time_remaining}"
+        self.timer_label.text = f"Time: {q.time_remaining}"  # This shows the correct time
         self.update_lives_display()
         self.setup_question()
     
@@ -252,14 +252,20 @@ class QuizOne(Screen):
         q = self.quiz_manager
         
         if q.current_question_index >= len(q.questions):
+            debug_print("User is at the end of the round")
+            debug_print(f"Question index: {q.current_question_index}")
             if q.current_bank_index == 4:  # If the user is at the end of round 4
+                debug_print("User is at the end of round 4")
                 if q.score < 230:   # And hasn't met the score threshold
+                    debug_print("User has not met the threshold")
                     q.game_over = True
                     self.check_game_over()
                 else:  # User met the score threshold, allow round 5
+                    debug_print("User met the threshold")
                     self.quiz_manager.num_questions_per_round = 15
                     self.next_round()
             else:  # Move to the next round if not at round 4
+                debug_print("Game will move on to the next round")
                 conn, cursor = get_db_connection()
                 cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
                 last_round = cursor.fetchone()[0]
@@ -272,6 +278,7 @@ class QuizOne(Screen):
                 else:
                     self.next_round()
         else:
+            debug_print("Show the next question in the round")
             self.show_question()
     
     def show_question(self):
@@ -361,9 +368,23 @@ class QuizOne(Screen):
             self.answer_buttons[btn_name].disabled = True
             self.answer_buttons[btn_name].text = ""
         
-        self.quiz_manager.time_remaining = 30
-        self.timer_label.text = f"Time: {self.quiz_manager.time_remaining}"
-        self.start_timer()
+        conn, cursor = get_db_connection()
+        try:
+            cursor.execute("USE bible_trivia;")
+            cursor.execute("SELECT last_question FROM user_progress WHERE user_id = %s", (App.get_running_app().user_id,))
+            saved_question_id = cursor.fetchone()[0]
+
+            if question_data['question_id'] != saved_question_id:
+                self.quiz_manager.time_remaining = 30
+            else:
+                self.quiz_manager.time_remaining = max(self.quiz_manager.time_remaining, 10)
+            self.timer_label.text = f"Time: {self.quiz_manager.time_remaining}"
+            self.start_timer()
+        except mysql.connector.Error as e:
+            debug_print(f"Database error in show_question(): {e}")
+        finally:
+            cursor.close()
+            conn.close()
     
     def _handle_button_press(self, button, is_correct, scripture_references, answer):
         self.selected_button = button
@@ -423,7 +444,12 @@ class QuizOne(Screen):
             self.check_game_over()
         else:
             self.quiz_manager.next_question()
+            if self.quiz_manager.game_over:
+                self.check_game_over()
+                return
+            
             self.quiz_manager.time_remaining = 30
+            debug_print(f"time_up_effect(): {self.quiz_manager.current_question_index}")
             self.setup_question()
     
     def update_lives_display(self):
@@ -488,6 +514,7 @@ class QuizOne(Screen):
             debug_print("No scripture reference exists")
         
         if self.quiz_manager.is_game_over():
+            debug_print("Checking game over")
             self.check_game_over()
         else:
             Clock.schedule_once(self.setup_question, 2)
@@ -603,7 +630,7 @@ class QuizOne(Screen):
                 self.timer_event.cancel()
             
             content = BoxLayout(orientation="vertical")
-            content.add_widget(Label(text="Are you sure you want to quit? Your progress will be saved."))
+            content.add_widget(Label(text="Do you want to quit? Your progress will be saved."))
 
             self._quit_confirmed = False
 
@@ -634,7 +661,7 @@ class QuizOne(Screen):
 
             content.add_widget(button_box)
             
-            popup = Popup(title="", content=content, size_hint=(0.6, 0.27))
+            popup = Popup(title="", content=content, size_hint=(0.6, 0.8))
 
             def on_popup_dismiss(*_args):
                 if not getattr(self, "_quit_confirmed", False):
@@ -683,7 +710,7 @@ class QuizOne(Screen):
         
         q.used_question_ids = set()
         
-        self.timer_label.text = f"Time remaining: {self.quiz_manager.time_remaining}"
+        self.timer_label.text = f"Time: {self.quiz_manager.time_remaining}"
         self.result_label.text = ""
         
         self.timer_label.opacity = 0

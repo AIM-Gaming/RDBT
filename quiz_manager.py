@@ -126,14 +126,13 @@ class QuizManager:
     
     def next_question(self):
         """Advance to the next question, or mark game over if finished"""
-        while True:
-            self.current_question_index += 1
-            if self.current_question_index >= len(self.questions):
-                self.game_over = True
-                break
-            qid = self.questions[self.current_question_index]["question_id"]
-            if qid in self.used_question_ids:
-                break
+        self.current_question_index += 1
+        debug_print(f"Current bank index increased from {self.current_question_index - 1} to {self.current_question_index}")
+        if self.current_question_index >= len(self.questions):
+            return
+        qid = self.questions[self.current_question_index]["question_id"]
+        if qid in self.used_question_ids:
+            return
             
     def at_end_of_round(self):
         """Decides what to do at the end of the round"""
