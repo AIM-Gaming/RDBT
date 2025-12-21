@@ -419,6 +419,7 @@ class QuizOne(Screen):
         return True  # Consume the event
     
     def start_timer(self):
+        debug_print("start_timer() accessed")
         if self.timer_event:
             self.timer_event.cancel()
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
@@ -434,6 +435,7 @@ class QuizOne(Screen):
             self.time_up()
     
     def time_up(self):
+        debug_print("Time's up!")
         self.result_label.text = "Time's up!"
         self.quiz_manager.lives -= 1
         self.update_lives_display()
@@ -473,7 +475,7 @@ class QuizOne(Screen):
     # noinspection PyUnusedLocal
     def check_answer(self, is_correct, scripture_references=None, selected_text=None):
         """Checks if the answer provided by the user is correct."""
-        debug_print("Entering check_answer()")
+        debug_print("check_answer() accessed")
         if self.timer_event:
             self.timer_event.cancel()
         
@@ -521,17 +523,20 @@ class QuizOne(Screen):
             Clock.schedule_once(self.setup_question, 2)
     
     def next_round(self):
+        debug_print("next_round() accessed")
         self.result_label.text = f"Round {self.quiz_manager.current_bank_index} completed!"
         if self.quiz_manager.current_bank_index == 4 and self.quiz_manager.score >= 230:
             Clock.schedule_once(self._delay_before_next_round, 2)
-        Clock.schedule_once(lambda dt: self.finalize_next_round(), 2)
+        else:
+            Clock.schedule_once(lambda dt: self.finalize_next_round(), 2)
     
     def _delay_before_next_round(self, dt):
         self.result_label.text = "230-point threshold crossed! Advancing to Round 5. Get ready..."
         Clock.schedule_once(lambda dt: self.finalize_next_round(), 2)
     
     def finalize_next_round(self):
-        # Check if there's a next round efore incrementing
+        # Check if there's a next round before incrementing
+        debug_print("finalize_next_round() accessed")
         conn, cursor = get_db_connection()
         try:
             cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
@@ -540,6 +545,7 @@ class QuizOne(Screen):
             cursor.close()
             conn.close()
         if self.quiz_manager.current_bank_index < last_round:
+            debug_print("There are more rounds to play, moving to the next round")
             self.quiz_manager.current_bank_index += 1
 
             # Generate a new set of questions for the new round
@@ -551,14 +557,17 @@ class QuizOne(Screen):
             ) or []
             self.quiz_manager.current_question_index = 0
             self.quiz_manager.save_progress()  # Save the new questions id list
+            debug_print("setup_question() called in finalize_next_round()")
             self.setup_question()
         else:
+            debug_print("No more rounds available, game over.")
             # No more rounds, end the game
             self.quiz_manager.game_over = True
             self.check_game_over()
     
     def check_game_over(self, user_id=None):
         """Checks whether the game is over or the quiz is completed"""
+        debug_print("check_game_over() accessed")
         user_id = user_id or App.get_running_app().user_id
         score = self.quiz_manager.score
         lives = self.quiz_manager.lives
@@ -574,8 +583,6 @@ class QuizOne(Screen):
             
             self.result_label.pos_hint = {"y": 0.5}
 
-            
-            
             self.quit_button.pos_hint = {"center_x": 0.5, "y": 0.1}
             self.quit_button.size = (150, 150)
             self.quit_button.disabled = False
@@ -583,11 +590,14 @@ class QuizOne(Screen):
             self.quit_button.background_normal = os.path.join(TEMP_ASSETS_DIR, "images", "HomeButton.png")
             self.quit_button.background_down = os.path.join(TEMP_ASSETS_DIR, "images", "HomeButtonPressed.png")
             
-            if lives <= 0:  # If plauer ran out of lives
+            if lives <= 0:  # If player ran out of lives
+                debug_print("Player has run out of lives")
                 self.result_label.text = (f"Read your Bible.\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}")
             elif bank_index == 4 and score < 230:  # If player didn't meet score threshold for round 5
+                debug_print("Player did not meet score threshold for Round 5")
                 self.result_label.text = f"Quiz completed!\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}\nYou need at least 230 points to advance to Round 5!"
             else:  # Quiz completed successfully
+                debug_print("Quiz completed successfully")
                 self.result_label.text = f"Quiz completed!\n Your score: {score}\n Lives: {lives}\n High Score: {high_score}"
 
             # Prevent the resume button from appearing

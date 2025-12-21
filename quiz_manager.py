@@ -118,8 +118,6 @@ class QuizManager:
         else:
             self.current_question_index += 1
         
-        # self.last_question_id = current_question["question_id"]
-        
         return {
             "is_correct": is_correct,
             "scripture_references": scripture_refs if scripture_refs else None
