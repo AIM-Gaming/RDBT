@@ -94,6 +94,7 @@ class QuizManager:
         """Check's the user's selected answer and updates score/lives"""
         current_question = self.get_current_question()
         if not current_question:
+            debug_print("No current question found.")
             return {"is_correct": False, "scripture_references": []}
         
         # self.last_question_id = current_question["question_id"]

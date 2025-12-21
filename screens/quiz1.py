@@ -349,7 +349,8 @@ class QuizOne(Screen):
             
             is_correct = answer in selected_correct
             scripture_ref = answer_references.get(answer, "")
-            button.on_press = lambda btn=button, correct=is_correct: self._handle_button_press(btn, correct, scripture_ref, answer)
+            button.on_press = lambda btn=button, correct=is_correct, ref=scripture_ref, ans=answer: self._handle_button_press(btn, correct, ref, ans)
+            debug_print(f"---------------\nButton #{button_index} answer: {answer}\n---------------")
             button_index += 1
             
             # Apply colors
@@ -388,6 +389,7 @@ class QuizOne(Screen):
     
     def _handle_button_press(self, button, is_correct, scripture_references, answer):
         self.selected_button = button
+        debug_print(f"------------\nAnswer passed to check_answer(): {answer}\n------------")
         self.check_answer(is_correct, scripture_references, answer)
 
     def _reset_buttons(self):
@@ -488,7 +490,6 @@ class QuizOne(Screen):
         self.flicker_state = False  # Tracks whether to use original color or flicker color
         self.flicker_event = Clock.schedule_interval(self.flicker_button, 0.2)
         
-        selected_text = selected_btn.text.strip()
         result = self.quiz_manager.check_answer(selected_text)
         
         # Check if the selected answer is correct
@@ -693,7 +694,7 @@ class QuizOne(Screen):
         self.reset(reset_db=False)
 
         home_page = self.manager.get_screen("HomeScreen")
-        home_page.has_left_game_this_session = True
+        home_page.has_left_game_this_session = False
         home_page.update_button_box()
         self.manager.transition = NoTransition()
         self.manager.current = "HomeScreen"

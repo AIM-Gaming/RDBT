@@ -1,6 +1,8 @@
 from assets import extract_video, extract_assets
 from app import BibleTriviaApp
 
+# When the user reaches Round 5, the game suddenly ends.
+    # Debug outputs show the answers, then "Game over. No more questions."
 # If the user fails, the resume button sends them back to Round 1. Make it so that it doesn't appear at all.
     # Check the conditioning in quit_quiz() and make sure it doesn't meet the conditions for showing resume button in update_button_box().
 # Add api.py and integrate it
