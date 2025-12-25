@@ -2,7 +2,7 @@ from assets import extract_video, extract_assets
 from app import BibleTriviaApp
 
 # If the user fails, the resume button sends them back to Round 1. Make it so that it doesn't appear at all.
-    # Check the conditioning in quit_quiz() and make sure it doesn't meet the conditions for showing resume button in update_button_box().
+    # Not enough information to replicate the bug.
 # Add api.py and integrate it
 # Carousel centering is good enough for now, recalculate later
 

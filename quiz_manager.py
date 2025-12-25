@@ -2,10 +2,11 @@ from kivy.app import App
 
 import json
 import random
+import requests
 import mysql.connector
 from typing import List, Dict, Any, Tuple, Optional
 
-from utils import debug_print
+from utils import debug_print, API_BASE_URL
 from db import get_db_connection
 
 
@@ -34,19 +35,10 @@ class QuizManager:
     
     def load_questions(self, shuffle: bool = True, limit: Optional[int] = None):
         """Loads questions from the database"""
-        conn, cursor = get_db_connection(dictionary=True)
-        if not conn or not cursor:
-            debug_print("Database connection failed in load_questions")
-            self.questions = []
-            return
         try:
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("""
-                SELECT current_bank_index, current_question, score, lives, time_remaining, last_question, num_questions_per_round, question_id_list
-                FROM user_progress
-                WHERE user_id = %s
-            """, (self.user_id,))
-            progress = cursor.fetchone()
+            response = requests.get(f"{API_BASE_URL}/users/{self.user_id}/progress")
+            response.raise_for_status()
+            progress = response.json()
 
             if progress:
                 self.current_bank_index = progress["current_bank_index"]
@@ -77,12 +69,9 @@ class QuizManager:
                         selected_bible_version=self.bible_version
                     ) or []
 
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in load_questions: {e}")
-        finally:
-            cursor.close()
-            conn.close()
-        self.used_question_ids = set()
+        except requests.HTTPError as e:
+            debug_print(f"API error in load_questions: {e}")
+        self.used_question_ids = set()  # Refer to this if any errors come about regarding repeating questions.
     
     def get_current_question(self) -> Optional[Dict]:
         """Return the current question data"""
@@ -147,46 +136,37 @@ class QuizManager:
     
     def save_progress(self):
         """Saves the current user's progress to the database"""
-        conn, cursor = get_db_connection()
-        
         try:
-            cursor.execute("USE bible_trivia;")
             debug_print(f"Saving progress for user_id {self.user_id}")
             question_id_list = json.dumps([q["question_id"] for q in self.questions])
             
-            if self.last_question_id is not None:
-                cursor.execute("""
-                            REPLACE INTO user_progress (user_id, current_bank_index, current_question, score, lives, time_remaining, last_question, num_questions_per_round, question_id_list)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (self.user_id, self.current_bank_index, self.current_question_index, self.score,
-                              self.lives, self.time_remaining, self.last_question_id, self.num_questions_per_round, question_id_list))
-            else:
-                debug_print("No last question ID")
-                cursor.execute("""
-                            REPLACE INTO user_progress (user_id, current_bank_index, current_question, score, lives, time_remaining, num_questions_per_round, question_id_list)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (self.user_id, self.current_bank_index, self.current_question_index, self.score,
-                              self.lives, self.time_remaining, self.num_questions_per_round, question_id_list))
+            progress_data = {
+                "current_bank_index": self.current_bank_index,
+                "current_question": self.current_question_index,
+                "score": self.score,
+                "lives": self.lives,
+                "time_remaining": self.time_remaining,
+                "last_question": self.last_question_id,
+                "num_questions_per_round": self.num_questions_per_round,
+                "question_id_list": question_id_list
+            }
             
-            conn.commit()
+            response = requests.post(
+                f"{API_BASE_URL}/users/{self.user_id}/save_progress",
+                json=progress_data
+            )
+            response.raise_for_status()
+            debug_print(f"Progress saved successfully: {response.json()}")
         
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in save_progress: {e}")
-        finally:
-            cursor.close()
-            conn.close()
+        except requests.HTTPError as e:
+            debug_print(f"API error in save_progress: {e}")
     
     def load_progress(self):
         """Loads progress from the database"""
-        conn, cursor = get_db_connection(dictionary=True)
         try:
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("""
-                SELECT current_bank_index, current_question, score, lives, time_remaining, last_question, num_questions_per_round, question_id_list
-                FROM user_progress
-                WHERE user_id = %s
-            """, (self.user_id,))
-            progress = cursor.fetchone()
+            response = requests.get(f"{API_BASE_URL}/users/{self.user_id}/progress")
+            response.raise_for_status()
+            progress = response.json()
             if progress:
                 self.current_bank_index = progress["current_bank_index"]
                 self.current_question_index = progress["current_question"]
@@ -218,41 +198,19 @@ class QuizManager:
                 else:
                     debug_print("No question ID list found")
                     return
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in QuizManager.load_progress: {e}")
-        finally:
-            cursor.close()
-            conn.close()
+        except requests.HTTPError as e:
+            debug_print(f"API error in QuizManager.load_progress: {e}")
 
 
-def fetch_all_questions(bank_id, shuffle=True, limit=None, selected_bible_version='NIV'):
+def fetch_all_questions(bank_id, shuffle=True, limit=None, selected_bible_version='NIV') -> List[Dict[str, Any]]:
     """Retrieve all questions (with answers) for a given question bank"""
     debug_print(f"fetch_all_questions() called with bank_id {bank_id}")
-    conn, cursor = get_db_connection(dictionary=True)
     
     # Fetch questions with corresponding answers
     try:
-        cursor.execute("USE bible_trivia;")
-        cursor.execute("""
-            SELECT
-                q.id as question_id,
-                q.question_text,
-                a.answer_id,
-                a.answer_text,
-                a.is_correct,
-                IF(a.is_correct, NULL, (
-                    SELECT GROUP_CONCAT(DISTINCT sr2.bible_ref SEPARATOR ', ')
-                    FROM scripture_references sr2
-                    JOIN answers a2 ON sr2.answer_id = a2.answer_id
-                    WHERE a2.question_id = a.question_id AND a2.is_correct = 1
-                )) AS bible_ref
-            FROM questions q
-            JOIN answers a ON q.id = a.question_id
-            LEFT JOIN scripture_references sr ON a.answer_id = sr.answer_id
-            WHERE q.question_bank_id = %s
-            AND (a.bible_version = %s OR a.bible_version = 'ALL')
-        """, (bank_id, selected_bible_version))
-        raw_data = cursor.fetchall()
+        response = requests.get(f"{API_BASE_URL}/bible_trivia/questions", params={"bank_id": bank_id, "selected_bible_version": selected_bible_version})
+        response.raise_for_status()
+        raw_data = response.json()
         
         # Organize answers under questions in a dictionary
         questions = {}
@@ -279,13 +237,10 @@ def fetch_all_questions(bank_id, shuffle=True, limit=None, selected_bible_versio
         else:
             selected_questions = all_questions
         
-        return selected_questions  # Dictionary
+        return selected_questions
     except mysql.connector.Error as e:
         print(f"Database error in fetch_all_questions: {e}")
         return []
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def fetch_questions_by_ids(question_ids, selected_bible_version='NIV'):
@@ -295,30 +250,10 @@ def fetch_questions_by_ids(question_ids, selected_bible_version='NIV'):
     if isinstance(question_ids, int):
         question_ids = [question_ids]
 
-    conn, cursor = get_db_connection(dictionary=True)
     try:
-        cursor.execute("USE bible_trivia;")
-        format_strings = ','.join(['%s'] * len(question_ids))
-        cursor.execute(f"""
-            SELECT
-                q.id as question_id,
-                q.question_text,
-                a.answer_id,
-                a.answer_text,
-                a.is_correct,
-                IF(a.is_correct, NULL, (
-                    SELECT GROUP_CONCAT(DISTINCT sr2.bible_ref SEPARATOR ', ')
-                    FROM scripture_references sr2
-                    JOIN answers a2 ON sr2.answer_id = a2.answer_id
-                    WHERE a2.question_id = a.question_id AND a2.is_correct = 1
-                )) AS bible_ref
-            FROM questions q
-            JOIN answers a ON q.id = a.question_id
-            LEFT JOIN scripture_References sr ON a.answer_id = sr.answer_id
-            WHERE q.id IN ({format_strings})
-            AND (a.bible_version = %s OR a.bible_version = 'ALL')
-        """, (*question_ids, selected_bible_version))
-        raw_data = cursor.fetchall()
+        response = requests.get(f"{API_BASE_URL}/bible_trivia/questions_by_ids", params={"question_ids": question_ids, "selected_bible_version": selected_bible_version})
+        response.raise_for_status()
+        raw_data = response.json()
 
         # Organize answers under questions in a dictionary
         questions = {}
@@ -340,10 +275,6 @@ def fetch_questions_by_ids(question_ids, selected_bible_version='NIV'):
         # Return questions in the original order
         ordered_questions = [questions[qid] for qid in question_ids if qid in questions]
         return ordered_questions
-    except mysql.connector.Error as e:
-        debug_print(f"Database error in fetch_questions_by_ids: {e}")
+    except requests.HTTPError as e:
+        debug_print(f"API error in fetch_questions_by_ids: {e}")
         return []
-    finally:
-        cursor.close()
-        conn.close()
-

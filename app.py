@@ -8,7 +8,7 @@ from kivy.uix.label import Label
 import os
 import shutil
 import mysql.connector
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from utils import debug_print, last_logged_in, load_user_settings, TEMP_ASSETS_DIR, INACTIVIY_THRESHOLD
 from db import get_db_connection
@@ -60,7 +60,9 @@ class BibleTriviaApp(App):
         last_user = last_logged_in()
         if last_user:
             self.user_id = last_user.get("user_id")
-            self.user_settings = load_user_settings(self.user_id)
+            settings = load_user_settings(self.user_id)
+            if settings:
+                self.user_settings = settings
         
         if self.user_settings["high_contrast"]:
             self.apply_high_contrast(True)

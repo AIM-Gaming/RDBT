@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 import json
+import requests
 from argon2 import PasswordHasher
 from typing import Optional, Dict
 from kivy.app import App
@@ -25,6 +26,7 @@ LOCAL_USER_FILE = resource_path("last_logged_in.json")
 ASSETS_ZIP_PATH = resource_path("assets/assets.zip")
 TEMP_ASSETS_DIR = resource_path("temp_assets")
 INACTIVIY_THRESHOLD = 5 * 60
+API_BASE_URL = "http://127.0.0.1:8000"
 ph = PasswordHasher()
 
 
@@ -94,22 +96,14 @@ def last_logged_in():
 
 def load_user_settings(user_id) -> Optional[Dict]:
     """ Fetches user settings from the database """
-    conn, cursor = get_db_connection(dictionary=True)
-    
-    try:
-        cursor.execute("USE users;")
-        cursor.execute("SELECT * FROM user_settings WHERE user_id = %s", (user_id,))
-        settings = cursor.fetchone()
-        
-        if settings:
-            debug_print(f"Loaded settings: {settings}")
-            return settings
-        else:
-            debug_print("No settings found for user")
-            return None
-    finally:
-        cursor.close()
-        conn.close()
+    response = requests.get(f"{API_BASE_URL}/users/{user_id}/settings")
+    response.raise_for_status()
+    if response.status_code == 200:
+        settings = response.json()
+        return settings
+    else:
+        debug_print(f"Failed to fetch user settings: {response.status_code}")
+        return None
 
 
 # noinspection PyUnusedLocal
