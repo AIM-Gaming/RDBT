@@ -7,7 +7,6 @@ import mysql.connector
 from typing import List, Dict, Any, Tuple, Optional
 
 from utils import debug_print, API_BASE_URL
-from db import get_db_connection
 
 
 class QuizManager:
@@ -238,8 +237,8 @@ def fetch_all_questions(bank_id, shuffle=True, limit=None, selected_bible_versio
             selected_questions = all_questions
         
         return selected_questions
-    except mysql.connector.Error as e:
-        print(f"Database error in fetch_all_questions: {e}")
+    except requests.HTTPError as e:
+        print(f"API error in fetch_all_questions: {e}")
         return []
 
 
