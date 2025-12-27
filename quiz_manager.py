@@ -3,8 +3,7 @@ from kivy.app import App
 import json
 import random
 import requests
-import mysql.connector
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Optional
 
 from utils import debug_print, API_BASE_URL
 
