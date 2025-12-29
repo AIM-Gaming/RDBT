@@ -9,6 +9,7 @@ import os
 import shutil
 import requests
 from datetime import datetime
+from kivy.core.window import Window
 
 from utils import debug_print, last_logged_in, load_user_settings, TEMP_ASSETS_DIR, INACTIVIY_THRESHOLD, API_BASE_URL
 from screens.intro import IntroScreen
@@ -27,7 +28,9 @@ class BibleTriviaApp(App):
 
         self.manager = None
         self.user_id = None
-        self.heartbeat_event = None
+        self.inactivity_check_event = None
+        self.last_activity_update_time = None
+        self.activity_update_cooldown = 5  # Only update every 5 seconds max to avoid spam
         self.user_settings = {
             "master_volume": 50,
             "sfx_volume": 50,
@@ -42,7 +45,12 @@ class BibleTriviaApp(App):
         self.game_over = True
     
     def build(self):
-        self.heartbeat_event = Clock.schedule_interval(self.update_last_active, 60)
+        # Bind user input events to update last activity
+        Window.bind(on_motion=self.on_user_activity)
+        Window.bind(on_keyboard=self.on_user_activity)
+        Window.bind(on_touch_down=self.on_user_activity)
+        
+        # Check for inactivity every 60 seconds
         self.inactivity_check_event = Clock.schedule_interval(self.check_inactivity, 60)
         self.manager = ScreenManager()
         
@@ -62,6 +70,8 @@ class BibleTriviaApp(App):
             settings = load_user_settings(self.user_id)
             if settings:
                 self.user_settings = settings
+                # Update last_active immediately after login
+                self.update_last_active(0)
         
         if self.user_settings["high_contrast"]:
             self.apply_high_contrast(True)
@@ -92,9 +102,7 @@ class BibleTriviaApp(App):
                 debug_print(f"API error in BibleTriviaApp.on_stop(): {e}")
             self.user_id = None
         
-        # Stop the heartbeat and inactivity events
-        if self.heartbeat_event:
-            Clock.unschedule(self.heartbeat_event)
+        # Stop the inactivity check event
         if self.inactivity_check_event:
             Clock.unschedule(self.inactivity_check_event)
         
@@ -130,16 +138,32 @@ class BibleTriviaApp(App):
             except requests.HTTPError as e:
                 debug_print(f"API error in update_last_active(): {e}")
     
+    def on_user_activity(self, window, *args):
+        """Called on mouse motion, keyboard, or touch events."""
+        # If no user is logged in, do NOT consume the event —
+        # return False so Kivy widgets still receive input.
+        if not self.user_id:
+            return False
+        
+        # Throttle updates to avoid API spam (max once every 5 seconds)
+        now = datetime.now().timestamp()
+        if self.last_activity_update_time is None or (now - self.last_activity_update_time) >= self.activity_update_cooldown:
+            self.last_activity_update_time = now
+            self.update_last_active(0)
+        
+        return False
+    
     def check_inactivity(self, dt):
         """Check if the user has been inactive for too long and logs them out"""
+        debug_print("check_inactivity() accessed")
         if self.user_id:
             try:
                 response = requests.get(f"{API_BASE_URL}/users/{self.user_id}/get_last_active")
                 response.raise_for_status()
                 result = response.json()
 
-                if result and result["last_active"]:
-                    last_active = result["last_active"]
+                if result and result.get("last_active"):
+                    last_active = datetime.fromisoformat(result["last_active"])
                     now = datetime.now()
 
                     # Check if the user has been inactive for too long
@@ -158,6 +182,7 @@ class BibleTriviaApp(App):
     
     def logout_user(self):
         """Logs out the current user"""
+        debug_print("Logging out user (app.py)")
         if self.user_id:
             try:
                 response = requests.post(f"{API_BASE_URL}/users/{self.user_id}/log_out")
@@ -165,10 +190,15 @@ class BibleTriviaApp(App):
             except requests.HTTPError as e:
                 debug_print(f"API error during logout: {e}")
             self.user_id = None
+            self.last_activity_update_time = None
         
-        # Stop the heartbeat event
-        if self.heartbeat_event:
-            Clock.unschedule(self.heartbeat_event)
+        # Refresh the home screen UI to reflect logged-out state
+        try:
+            if self.manager.current == "HomeScreen":
+                home_screen = self.manager.get_screen("HomeScreen")
+                home_screen.on_enter()
+        except Exception as e:
+            debug_print(f"Error refreshing home screen after logout: {e}")
     
     def show_screen(self, screen_name):
         self.manager.current = screen_name  # Use this format to switch screens

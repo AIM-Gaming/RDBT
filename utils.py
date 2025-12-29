@@ -25,7 +25,7 @@ def resource_path(relative_path):
 LOCAL_USER_FILE = resource_path("last_logged_in.json")
 ASSETS_ZIP_PATH = resource_path("assets/assets.zip")
 TEMP_ASSETS_DIR = resource_path("temp_assets")
-INACTIVIY_THRESHOLD = 5 * 60
+INACTIVIY_THRESHOLD = 60 * 5
 API_BASE_URL = "http://127.0.0.1:8000"
 ph = PasswordHasher()
 

@@ -113,7 +113,7 @@ def get_user_high_score(user_id: int):
 
 @app.get("/users/{user_id}/get_last_active")
 def get_last_active_user(user_id: int):
-    conn, cursor = get_db_connection()
+    conn, cursor = get_db_connection(dictionary=True)
 
     try:
         cursor.execute("USE users;")
@@ -123,9 +123,9 @@ def get_last_active_user(user_id: int):
         if result:
             return result
         else:
-            return False
+            return {}
     except mysql.connector.Error as e:
-        return False
+        return {}
     finally:
         cursor.close()
         conn.close()

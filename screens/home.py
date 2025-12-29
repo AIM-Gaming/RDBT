@@ -77,7 +77,7 @@ class HomeScreen(Screen):
                                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LogoutButtonPressed.png"),
                                     border=(0, 0, 0, 0), size=(256, 144)
                                     )
-        self.logout_button.bind(on_release=self.logout)
+        self.logout_button.bind(on_release=self.on_logout)
         self.layout.add_widget(self.logout_button)
         
         # Box layout to hold the buttons
@@ -149,7 +149,6 @@ class HomeScreen(Screen):
             self.logout_button.size = (0, 0)
             self.logout_button.pos_hint = {"center_x": -1, "top": 0.9}
         
-        debug_print(f"Lives: {self.quiz_manager.lives} | Lives display: {self.quiz_screen.lives_image.source}")
         if self.player is None:
             Clock.schedule_once(lambda dt: self.play_music(music_file=current_app.user_settings['background_music']), 0.5)
     
@@ -443,7 +442,7 @@ class HomeScreen(Screen):
         self.manager.current = "QuizOne"
     
     # noinspection PyUnusedLocal
-    def logout(self, instance):
+    def on_logout(self, instance):
         play_sfx("button_press_1.mp3")
         debug_print("Logging out user...")
         App.get_running_app().user_id = None  # Clear the session
@@ -465,7 +464,9 @@ class HomeScreen(Screen):
         # Show the login button
         self.login_button.opacity = 100
         self.login_button.disabled = False
-    
+        self.login_button.size_hint = (None, None)
+        self.login_button.size = (130, 130)
+        self.login_button.pos_hint = {"center_x": 0.15, "top": 0.95}
     # noinspection PyUnusedLocal
     def start_game(self, instance):
         self.manager.transition = FadeTransition()

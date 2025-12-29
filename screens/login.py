@@ -88,6 +88,8 @@ class LoginScreen(Screen):
             self.home_screen.logout_button.disabled = False
             username = ""
             password = ""
+            # Update last_active immediately after login
+            App.get_running_app().update_last_active(0)
             self.manager.current = "HomeScreen"
         else:
             username = ""
@@ -141,11 +143,14 @@ def login_user(username: str, password: str) -> Tuple[Optional[int], Optional[Di
                     "bible_version": "NIV"
                 }
             
-                # Restart the heartbeat event
+                # Ensure inactivity checker is scheduled
                 app = App.get_running_app()
-                if app.heartbeat_event:
-                    Clock.unschedule(app.heartbeat_event)
-                app.heartbeat_Event = Clock.schedule_interval(app.update_last_active, 60)
+                try:
+                    if getattr(app, "inactivity_check_event", None):
+                        Clock.unschedule(app.inactivity_check_event)
+                except Exception:
+                    pass
+                app.inactivity_check_event = Clock.schedule_interval(app.check_inactivity, 60)
 
             except Exception as e:
                 debug_print(f"Incorrect password for user {username}: {e}")
