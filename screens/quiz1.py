@@ -15,10 +15,8 @@ from kivy.core.window import Window
 import os
 import random
 import requests
-import mysql.connector
 from typing import List, Dict, Any
 
-from db import get_db_connection
 from utils import debug_print, wrap_text, play_sfx, TEMP_ASSETS_DIR, API_BASE_URL
 from quiz_manager import QuizManager, fetch_all_questions
 from widgets.blurred_image import BlurredImage

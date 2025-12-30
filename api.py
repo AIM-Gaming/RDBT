@@ -1,10 +1,10 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 import mysql.connector
 from typing import List, Optional, Dict, Any
 
 from db import get_db_connection
 app = FastAPI()
-
 
 # USERS: GET
 @app.get("/users/{user_id}/settings", response_model=Dict[str, Any])
@@ -130,6 +130,24 @@ def get_last_active_user(user_id: int):
         cursor.close()
         conn.close()
 
+@app.get("/users/{user_id}/check_progress")
+def check_user_progress(user_id: int) -> bool:
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("USE bible_trivia;")
+        cursor.execute("SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND time_remaining > 0", (user_id,))
+        has_progress = cursor.fetchone()[0] > 0
+
+        if has_progress:
+            return has_progress
+        else:
+            return False
+    except mysql.connector.Error as e:
+        return False
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # USERS: POST
 @app.post("/users/{user_id}/update_high_score")
@@ -190,7 +208,7 @@ def save_progress(user_id: int, progress: Dict[str, Any]):
         cursor.close()
         conn.close()
 
-@app.post("/users/{user_id/reset_progress")
+@app.post("/users/{user_id}/reset_progress")
 def reset_user_progress(user_id: int):
     conn, cursor = get_db_connection()
 
@@ -243,7 +261,20 @@ def update_last_active_user(user_id: int):
     finally:
         cursor.close()
         conn.close()
-
+    
+@app.post("/users/{user_id}/set_last_logged_in")
+def set_last_logged_in_user(user_id: int):
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("UPDATE users SET last_logged_in = NOW() WHERE id = %s", (user_id,))
+        conn.commit()
+        return {"status": "success", "user_id": user_id}
+    except mysql.connector.Error as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
 
 
 # BIBLE TRIVIA: GET
@@ -282,8 +313,14 @@ def get_all_questions(bank_id: int, selected_bible_version: str = 'NIV'):
         cursor.close()
         conn.close()
 
-@app.get("/bible_trivia/questions_by_ids", response_model=List[Dict[str, Any]])
-def get_questions_by_ids(question_ids: List[int], selected_bible_version: str = 'NIV') -> List[Dict[str, Any]]:
+class QuestionIdsRequest(BaseModel):
+    question_ids: List[int]
+    selected_bible_version: str = 'NIV'
+
+@app.post("/bible_trivia/questions_by_ids", response_model=List[Dict[str, Any]])
+def get_questions_by_ids(request: QuestionIdsRequest) -> List[Dict[str, Any]]:
+    question_ids = request.question_ids
+    selected_bible_version = request.selected_bible_version
     conn, cursor = get_db_connection(dictionary=True)
     
     try:

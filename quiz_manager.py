@@ -249,7 +249,8 @@ def fetch_questions_by_ids(question_ids, selected_bible_version='NIV'):
         question_ids = [question_ids]
 
     try:
-        response = requests.get(f"{API_BASE_URL}/bible_trivia/questions_by_ids", params={"question_ids": question_ids, "selected_bible_version": selected_bible_version})
+        response = requests.post(f"{API_BASE_URL}/bible_trivia/questions_by_ids",
+                                 json={"question_ids": question_ids, "selected_bible_version": selected_bible_version})
         response.raise_for_status()
         raw_data = response.json()
 

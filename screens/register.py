@@ -231,4 +231,3 @@ def register_user(username, password, confirm_pw, first_name):
         cursor.close()
         conn.close()
         return result
-

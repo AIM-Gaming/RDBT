@@ -129,4 +129,3 @@ def update_sfx_volume(instance, value):
     
     cursor.close()
     conn.close()
-

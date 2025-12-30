@@ -10,10 +10,11 @@ from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 
 import os
+import requests
 import mysql.connector
 from ffpyplayer.player import MediaPlayer
 
-from utils import debug_print, TEMP_ASSETS_DIR, play_sfx, last_logged_in
+from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL, play_sfx, last_logged_in
 from db import get_db_connection
 from quiz_manager import QuizManager
 from widgets.outlined_label import OutlinedLabel
@@ -83,9 +84,6 @@ class HomeScreen(Screen):
         # Box layout to hold the buttons
         self.button_box = None
         
-        self.layout.add_widget(Widget(size_hint=(1, 0.1)))
-        self.update_button_box()
-        self.layout.add_widget(Widget(size_hint=(1, 0.1)))
 
     def update_bg(self, instance, value):
         """Forces the background to fill the whole screen"""
@@ -99,6 +97,11 @@ class HomeScreen(Screen):
         current_app = App.get_running_app()
         user_id = current_app.user_id
         last_user = last_logged_in()
+
+        self.layout.add_widget(Widget(size_hint=(1, 0.1)))
+        self.update_button_box()
+        self.layout.add_widget(Widget(size_hint=(1, 0.1)))
+
         
         if user_id:
             username = last_user.get("username", "User")
@@ -121,15 +124,9 @@ class HomeScreen(Screen):
             self.logout_button.size = (256, 144)
             self.logout_button.pos_hint = {"center_x": 0.15, "top": 0.9}
             
-            conn, cursor = get_db_connection()
-            
             # Update last login time
-            cursor.execute("USE users;")
-            cursor.execute("UPDATE users SET last_logged_in = NOW() WHERE id = %s", (user_id,))
-            conn.commit()
-            
-            cursor.close()
-            conn.close()
+            response = requests.post(f"{API_BASE_URL}/users/{user_id}/set_last_logged_in")
+            response.raise_for_status()
         
         else:
             # Hide username label
@@ -253,14 +250,12 @@ class HomeScreen(Screen):
             self.layout.remove_widget(self.button_box)
         
         user_id = App.get_running_app().user_id
-        conn, cursor = get_db_connection()
         
         try:
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("""
-                SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND time_remaining > 0
-            """, (user_id,))
-            has_progress = cursor.fetchone()[0] > 0
+            response = requests.get(f"{API_BASE_URL}/users/{user_id}/check_progress")
+            print(response.json())
+            response.raise_for_status()
+            has_progress = response.json()  # Test this
 
             BUTTON_WIDTH = 320
             BUTTON_HEIGHT = 180
@@ -290,7 +285,7 @@ class HomeScreen(Screen):
             debug_print(f"Has progress: {has_progress}, Game over: {self.quiz_manager.game_over}, Left the game: {self.has_left_game_this_session}")
 
             # Add the resume button if there's progress
-            if add_resume_button:  # One of these conditions isn't being met when it should
+            if add_resume_button:
                 debug_print("Adding resume button")
                 resume_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
                                        background_color=(1, 1, 1, 1),
@@ -324,24 +319,18 @@ class HomeScreen(Screen):
             self.layout.add_widget(self.button_box, index=2)
             debug_print("Button box updated")
     
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in update_button_box: {e}")
-        finally:
-            cursor.close()
-            conn.close()
+        except requests.HTTPError as e:
+            debug_print(f"API error in update_button_box: {e}")
     
     # noinspection PyUnusedLocal
     def confirm_restart(self, instance):
         play_sfx("button_press_1.mp3")
         user_id = App.get_running_app().user_id
-        conn, cursor = get_db_connection()
         
         try:
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("""
-                            SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND time_remaining > 0
-                        """, (user_id,))
-            has_progress = cursor.fetchone()[0] > 0
+            response = requests.get(f"{API_BASE_URL}/users/{user_id}/check_progress")
+            response.raise_for_status()
+            has_progress = response.json()
             show_popup = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session  # Same logic as resume button
             
             # If there is progress
@@ -395,12 +384,8 @@ class HomeScreen(Screen):
                 self.manager.transition = FadeTransition()
                 self.manager.current = "QuizOne"  # If there's no progress, then just switch to the quiz screen.
         
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in confirm_restart: {e}")
-        
-        finally:
-            cursor.close()
-            conn.close()
+        except requests.HTTPError as e:
+            debug_print(f"API error in confirm_restart(): {e}")
     
     # noinspection PyUnusedLocal
     def resume_game(self, instance, *args):

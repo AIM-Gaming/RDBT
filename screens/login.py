@@ -169,4 +169,3 @@ def login_user(username: str, password: str) -> Tuple[Optional[int], Optional[Di
         conn.close()
     
     return user_id, settings
-

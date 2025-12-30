@@ -140,8 +140,7 @@ class BibleTriviaApp(App):
     
     def on_user_activity(self, window, *args):
         """Called on mouse motion, keyboard, or touch events."""
-        # If no user is logged in, do NOT consume the event —
-        # return False so Kivy widgets still receive input.
+        # If no user is logged in, do NOT consume the event - return False so widgets still receive input.
         if not self.user_id:
             return False
         
@@ -232,4 +231,3 @@ class BibleTriviaApp(App):
             for screen in self.manager.screens:
                 if hasattr(screen, "layout"):
                     screen.layout.canvas.before.clear()
-

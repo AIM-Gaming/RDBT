@@ -227,4 +227,3 @@ class OptionsScreen(Screen):
     def go_back(self, instance):
         self.manager.transition = NoTransition()
         self.manager.current = "HomeScreen"
-
