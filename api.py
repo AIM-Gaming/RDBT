@@ -276,6 +276,24 @@ def set_last_logged_in_user(user_id: int):
         cursor.close()
         conn.close()
 
+class UpdateSfxRequest(BaseModel):
+    value: int
+
+@app.post("/users/{user_id}/settings/update_sfx_volume")
+def update_user_sfx(user_id: int, request: UpdateSfxRequest):
+    conn, cursor = get_db_connection()
+
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("UPDATE user_settings SET sfx_volume = %s WHERE user_id = %s", (request.value, user_id))
+        conn.commit()
+        return {"status": "success", "user_id": user_id}
+    except mysql.connector.Error as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # BIBLE TRIVIA: GET
 @app.get("/bible_trivia/questions", response_model=List[Dict[str, Any]])

@@ -7,7 +7,6 @@ from argon2 import PasswordHasher
 from typing import Optional, Dict
 from kivy.app import App
 
-from db import get_db_connection
 from log import debug_print
 
 
@@ -122,10 +121,6 @@ def update_sfx_volume(instance, value):
     current_app = App.get_running_app()
     current_app.user_settings["sfx_volume"] = int(value)
     
-    conn, cursor = get_db_connection()
-    cursor.execute("USE users;")
-    cursor.execute("UPDATE user_settings SET sfx_volume = %s WHERE user_id = %s", (int(value), current_app.user_id))
-    conn.commit()
-    
-    cursor.close()
-    conn.close()
+    response = requests.post(f"{API_BASE_URL}/users/{current_app.user_id}/settings/update_sfx_volume",
+                             json={"value": int(value)})
+    response.raise_for_status()
