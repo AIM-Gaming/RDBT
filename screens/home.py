@@ -30,20 +30,9 @@ class HomeScreen(Screen):
         self.music = None
         self.player = None
 
-        from kivy.core.image import Image as CoreImage
-        # Ensure dimensions are 1920x1290
-        self.background_texture = CoreImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
-
+        self.background_texture = None
         self.bg_color = None
         self.bg_rect = None
-
-        with self.layout.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            self.bg_color = Color(1, 1, 1, 1)  # White color
-            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
-        
-        self.layout.bind(pos=self.update_bg, size=self.update_bg)
-        self.update_bg(None, None)
         
         self.quiz_screen = None
         self.quiz_manager = QuizManager(bible_version=App.get_running_app().user_settings.get("bible_version", "NIV"))
@@ -97,6 +86,18 @@ class HomeScreen(Screen):
         current_app = App.get_running_app()
         user_id = current_app.user_id
         last_user = last_logged_in()
+
+        from kivy.core.image import Image as CoreImage
+        # Ensure dimensions are 1920x1290
+        self.background_texture = CoreImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
+        debug_print(f"Path exists: {os.path.exists(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"))}")
+        with self.layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            self.bg_color = Color(1, 1, 1, 1)  # White color
+            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
+        
+        self.layout.bind(pos=self.update_bg, size=self.update_bg)
+        self.update_bg(None, None)
 
         self.layout.add_widget(Widget(size_hint=(1, 0.1)))
         self.update_button_box()
@@ -250,77 +251,84 @@ class HomeScreen(Screen):
             self.layout.remove_widget(self.button_box)
         
         user_id = App.get_running_app().user_id
-        
-        try:
-            response = requests.get(f"{API_BASE_URL}/users/{user_id}/check_progress")
-            print(response.json())
-            response.raise_for_status()
-            has_progress = response.json()  # Test this
 
-            BUTTON_WIDTH = 320
-            BUTTON_HEIGHT = 180
-            BUTTON_SPACING = 20
-            add_resume_button = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session
-            box_height = (BUTTON_HEIGHT * (4 if add_resume_button else 3)) + (BUTTON_SPACING * ((4 if add_resume_button else 3) - 1))
-        
-            # Expand button layout if resume button is to be added
-            self.button_box = BoxLayout(
-                orientation="vertical",
-                spacing=20,
-                size_hint=(None, None),
-                width=BUTTON_WIDTH,
-                height=box_height,
-                pos_hint={"right": 0.95, "center_y": 0.5}
-            )
-            
-            play_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, 
-                                 background_color=(1, 1, 1, 1),
-                                 background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButton.png"),
-                                 background_down=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButtonPressed.png"),
-                                 border=(0, 0, 0, 0)
-                                 )
-            play_button.bind(on_release=self.confirm_restart)
-            self.button_box.add_widget(play_button)
-            
-            debug_print(f"Has progress: {has_progress}, Game over: {self.quiz_manager.game_over}, Left the game: {self.has_left_game_this_session}")
+        # Default to no progress. If a user is logged in attempt the API
+        # check; any failure just leaves has_progress False so we still
+        # create the Play/Options/Credits buttons.
+        has_progress = False
+        if user_id:
+            try:
+                response = requests.get(f"{API_BASE_URL}/users/{user_id}/check_progress", timeout=5)
+                debug_print(f"check_progress response: {response.status_code}")
+                response.raise_for_status()
+                try:
+                    has_progress = bool(response.json())
+                except Exception:
+                    has_progress = bool(response.text)
+            except requests.HTTPError as e:
+                debug_print(f"Progress check failed (continuing without resume): {e}")
 
-            # Add the resume button if there's progress
-            if add_resume_button:
-                debug_print("Adding resume button")
-                resume_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
-                                       background_color=(1, 1, 1, 1),
-                                       background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeButton.png"),
-                                       background_down=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeButtonPressed.png"),
-                                       border=(0, 0, 0, 0)
-                                       )
-                resume_button.bind(on_release=self.resume_game)
-                self.button_box.add_widget(resume_button)
-            else:
-                debug_print("No progress detected, skipping resume button.")
-            
-            options_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
+        BUTTON_WIDTH = 320
+        BUTTON_HEIGHT = 180
+        BUTTON_SPACING = 20
+        add_resume_button = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session
+        box_height = (BUTTON_HEIGHT * (4 if add_resume_button else 3)) + (BUTTON_SPACING * ((4 if add_resume_button else 3) - 1))
+        
+        # Expand button layout if resume button is to be added
+        self.button_box = BoxLayout(
+            orientation="vertical",
+            spacing=BUTTON_SPACING,
+            size_hint=(None, None),
+            width=BUTTON_WIDTH,
+            height=box_height,
+            pos_hint={"right": 0.95, "center_y": 0.5}
+        )
+        
+        play_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, 
+                                background_color=(1, 1, 1, 1),
+                                background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButton.png"),
+                                background_down=os.path.join(TEMP_ASSETS_DIR, "images", "PlayButtonPressed.png"),
+                                border=(0, 0, 0, 0)
+                                )
+        play_button.bind(on_release=self.confirm_restart)
+        self.button_box.add_widget(play_button)
+        
+        debug_print(f"Has progress: {has_progress}, Game over: {self.quiz_manager.game_over}, Left the game: {self.has_left_game_this_session}")
+
+        # Add the resume button if there's progress
+        if add_resume_button:
+            debug_print("Adding resume button")
+            resume_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
                                     background_color=(1, 1, 1, 1),
-                                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsButton.png"),
-                                    background_down=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsButtonPressed.png"),
+                                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeButton.png"),
+                                    background_down=os.path.join(TEMP_ASSETS_DIR, "images", "ResumeButtonPressed.png"),
                                     border=(0, 0, 0, 0)
                                     )
-            options_button.bind(on_release=self.open_options)
-            self.button_box.add_widget(options_button)
-            
-            credits_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
-                                    background_color=(1, 1, 1, 1),
-                                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "CreditsButton.png"),
-                                    background_down=os.path.join(TEMP_ASSETS_DIR, "images", "CreditsButtonPressed.png"),
-                                    border=(0, 0, 0, 0)
-                                    )
-            credits_button.bind(on_release=self.open_credits)
-            self.button_box.add_widget(credits_button)
-            
-            self.layout.add_widget(self.button_box, index=2)
-            debug_print("Button box updated")
-    
-        except requests.HTTPError as e:
-            debug_print(f"API error in update_button_box: {e}")
+            resume_button.bind(on_release=self.resume_game)
+            self.button_box.add_widget(resume_button)
+        else:
+            debug_print("No progress detected, skipping resume button.")
+        
+        options_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
+                                background_color=(1, 1, 1, 1),
+                                background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsButton.png"),
+                                background_down=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsButtonPressed.png"),
+                                border=(0, 0, 0, 0)
+                                )
+        options_button.bind(on_release=self.open_options)
+        self.button_box.add_widget(options_button)
+        
+        credits_button = Button(size_hint_y=None, size_hint_x=1, height=BUTTON_HEIGHT, opacity=100,
+                                background_color=(1, 1, 1, 1),
+                                background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "CreditsButton.png"),
+                                background_down=os.path.join(TEMP_ASSETS_DIR, "images", "CreditsButtonPressed.png"),
+                                border=(0, 0, 0, 0)
+                                )
+        credits_button.bind(on_release=self.open_credits)
+        self.button_box.add_widget(credits_button)
+        
+        self.layout.add_widget(self.button_box, index=2)
+        debug_print("Button box updated")
     
     # noinspection PyUnusedLocal
     def confirm_restart(self, instance):
@@ -429,7 +437,7 @@ class HomeScreen(Screen):
     # noinspection PyUnusedLocal
     def on_logout(self, instance):
         play_sfx("button_press_1.mp3")
-        debug_print("Logging out user...")
+        debug_print("Logging out user... (home.py)")
         App.get_running_app().user_id = None  # Clear the session
 
         # Hide the username label

@@ -9,13 +9,12 @@ from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
-from kivy.graphics import Color, Rectangle
 
 import os
+import requests
 from typing import Dict, Tuple, Optional
 
-from db import get_db_connection
-from utils import debug_print, save_last_logged_in, load_user_settings, TEMP_ASSETS_DIR, ph
+from utils import debug_print, save_last_logged_in, load_user_settings, TEMP_ASSETS_DIR, API_BASE_URL, ph
 
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
@@ -112,15 +111,14 @@ class LoginScreen(Screen):
         self.password_input.text = ""
 
 def login_user(username: str, password: str) -> Tuple[Optional[int], Optional[Dict]]:
-    conn, cursor = get_db_connection()
     
     user_id: Optional[int] = None
     settings: Optional[Dict] = None
     
     try:
-        cursor.execute("USE users;")
-        cursor.execute("SELECT id, password_hash, logged_in FROM users WHERE username = %s", (username,))
-        user = cursor.fetchone()
+        response = requests.get(f"{API_BASE_URL}/login_user", json={"username": username})
+        response.raise_for_status()
+        user = response.json()
         
         if user:
             user_id, stored_hash, logged_in = user
@@ -129,8 +127,8 @@ def login_user(username: str, password: str) -> Tuple[Optional[int], Optional[Di
                 return None, None  # Deny login if already logged in elsewhere
             try:
                 ph.verify(stored_hash, password)
-                cursor.execute("UPDATE users SET last_logged_in = NOW() WHERE id = %s", (user_id,))
-                conn.commit()
+                update_request = requests.post(f"{API_BASE_URL}/users/{user_id}/set_last_logged_in")
+                update_request.raise_for_status()
 
                 # Save locally
                 save_last_logged_in(user_id, username)
@@ -159,13 +157,9 @@ def login_user(username: str, password: str) -> Tuple[Optional[int], Optional[Di
         else:
             debug_print("Username not found in database")
     
-    except Exception as e:
-        debug_print(f"Database error in login_user: {e}")
+    except requests.HTTPError as e:
+        debug_print(f"API error in login_user: {e}")
         user_id = None
         settings = None
-    
-    finally:
-        cursor.close()
-        conn.close()
     
     return user_id, settings

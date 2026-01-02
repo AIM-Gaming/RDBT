@@ -13,9 +13,9 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.checkbox import CheckBox
 
 import os
+import requests
 
-from db import get_db_connection
-from utils import debug_print, update_music_volume, update_sfx_volume, TEMP_ASSETS_DIR
+from utils import debug_print, update_music_volume, update_sfx_volume, TEMP_ASSETS_DIR, API_BASE_URL
 from widgets.carousel_selector import CarouselSelector
 from widgets.blurred_image import BlurredImage
 
@@ -162,13 +162,8 @@ class OptionsScreen(Screen):
         current_app = App.get_running_app()
         current_app.user_settings["high_contrast"] = value
         
-        conn, cursor = get_db_connection()
-        cursor.execute("USE users;")
-        cursor.execute("UPDATE user_settings SET high_contrast = %s WHERE user_id = %s", (value, current_app.user_id))
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
+        response = requests.post(f"{API_BASE_URL}/users/{current_app.user_id}/settings/update_high_contrast", json={"value": value})
+        response.raise_for_status()
         
         debug_print(f"High contrast mode set to {value}")
     
@@ -201,18 +196,16 @@ class OptionsScreen(Screen):
         new_high_contrast = self.high_contrast.active
         new_background_music = self.music_selector.selected_item
         
-        conn, cursor = get_db_connection()
-        
-        cursor.execute("USE users;")
-        cursor.execute("""
-            UPDATE user_settings
-            SET master_volume = %s, sfx_volume = %s, bible_version = %s, high_contrast = %s, background_music = %s
-            WHERE user_id = %s
-        """, (new_master_volume, new_sfx_volume, new_bible_version, new_high_contrast, new_background_music, user_id))
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
+        new_settings = {
+            "master_volume": new_master_volume,
+            "sfx_volume": new_sfx_volume,
+            "bible_version": new_bible_version,
+            "high_contrast": new_high_contrast,
+            "background_music": new_background_music
+        }
+
+        response = requests.post(f"{API_BASE_URL}/users/{user_id}/settings/save_settings", json=new_settings)
+        response.raise_for_status()
         
         current_app.user_settings["master_volume"] = new_master_volume
         current_app.user_settings["sfx_volume"] = new_sfx_volume
