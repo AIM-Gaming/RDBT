@@ -150,22 +150,6 @@ def check_user_progress(user_id: int) -> bool:
 
 
 # USERS: POST
-@app.post("/users/{user_id}/update_high_score")
-def update_user_high_score(user_id: int, score: int):
-    """Update user high score when score is greater than the previous high score."""
-    conn, cursor = get_db_connection()
-    
-    try:
-        cursor.execute("USE users;")
-        cursor.execute("UPDATE user_score SET high_score = %s WHERE user_id = %s", (score, user_id))
-        conn.commit()
-        return {"status": "success", "user_id": user_id}
-    except mysql.connector.Error as e:
-        return {"status": "error", "message": str(e)}
-    finally:
-        cursor.close()
-        conn.close()
-
 @app.post("/users/{user_id}/save_progress")
 def save_progress(user_id: int, progress: Dict[str, Any]):
     """Save user progress from QuizManager to the database
@@ -371,25 +355,3 @@ def get_questions_by_ids(request: QuestionIdsRequest) -> List[Dict[str, Any]]:
     finally:
         cursor.close()
         conn.close()
-
-@app.get("/bible_trivia/last_round", response_model=int)
-def get_last_round():
-    """Fetch the last round in the database."""
-    conn, cursor = get_db_connection()
-    
-    try:
-        cursor.execute("USE bible_trivia;")
-        cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
-        last_round = cursor.fetchone()[0]
-        
-        if last_round:
-            return last_round
-        else:
-            return 0
-    except mysql.connector.Error:
-        return 0
-    finally:
-        cursor.close()
-        conn.close()
-
-# BIBLE TRIVIA: POST

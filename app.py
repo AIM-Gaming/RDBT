@@ -7,11 +7,12 @@ from kivy.uix.label import Label
 
 import os
 import shutil
-import requests
+import mysql.connector
 from datetime import datetime
 from kivy.core.window import Window
 
-from utils import debug_print, last_logged_in, load_user_settings, TEMP_ASSETS_DIR, INACTIVIY_THRESHOLD, API_BASE_URL
+from utils import debug_print, last_logged_in, load_user_settings, TEMP_ASSETS_DIR, INACTIVIY_THRESHOLD
+from db import get_db_connection
 from screens.intro import IntroScreen
 from screens.home import HomeScreen
 from screens.login import LoginScreen
@@ -101,11 +102,16 @@ class BibleTriviaApp(App):
         
         # Log out the user
         if self.user_id:
+            conn, cursor = get_db_connection()
             try:
-                response = requests.post(f"{API_BASE_URL}/users/{self.user_id}/log_out")
-                response.raise_for_status()
-            except requests.HTTPError as e:
-                debug_print(f"API error in BibleTriviaApp.on_stop(): {e}")
+                cursor.execute("USE users;")
+                cursor.execute("UPDATE users SET logged_in = FALSE WHERE id = %s", (self.user_id,))
+                conn.commit()
+            except mysql.connector.Error as e:
+                debug_print(f"Database error during logout: {e}")
+            finally:
+                cursor.close()
+                conn.close()
             self.user_id = None
         
         # Stop the inactivity check event
@@ -138,11 +144,16 @@ class BibleTriviaApp(App):
     def update_last_active(self, dt):
         """Updates the last active timestamp for the logged-in user."""
         if self.user_id:
+            conn, cursor = get_db_connection()
             try:
-                response = requests.post(f"{API_BASE_URL}/users/{self.user_id}/set_last_active")
-                response.raise_for_status()
-            except requests.HTTPError as e:
-                debug_print(f"API error in update_last_active(): {e}")
+                cursor.execute("USE users;")
+                cursor.execute("UPDATE users SET last_active = NOW() WHERE id = %s", (self.user_id,))
+                conn.commit()
+            except mysql.connector.Error as e:
+                debug_print(f"Database error during heartbeat: {e}")
+            finally:
+                cursor.close()
+                conn.close()
     
     def on_user_activity(self, window, *args):
         """Called on mouse motion, keyboard, or touch events."""
@@ -162,10 +173,11 @@ class BibleTriviaApp(App):
         """Check if the user has been inactive for too long and logs them out"""
         debug_print("check_inactivity() accessed")
         if self.user_id:
+            conn, cursor = get_db_connection(dictionary=True)
             try:
-                response = requests.get(f"{API_BASE_URL}/users/{self.user_id}/get_last_active")
-                response.raise_for_status()
-                result = response.json()
+                cursor.execute("USE users;")
+                cursor.execute("SELECT last_active FROM users WHERE id = %s", (self.user_id,))
+                result = cursor.fetchone()
 
                 if result and result.get("last_active"):
                     last_active = datetime.fromisoformat(result["last_active"])
@@ -176,8 +188,11 @@ class BibleTriviaApp(App):
                         debug_print(f"User {self.user_id} has been inactive for too long. Logging out...")
                         self.logout_user()
             
-            except requests.HTTPError as e:
-                debug_print(f"API error during inactivity check: {e}")
+            except mysql.connector.Error as e:
+                debug_print(f"Database error during inactivity check: {e}")
+            finally:
+                cursor.close()
+                conn.close()
     
     def get_running_screen(self):
         try:
@@ -189,11 +204,16 @@ class BibleTriviaApp(App):
         """Logs out the current user"""
         debug_print("Logging out user (app.py)")
         if self.user_id:
+            conn, cursor = get_db_connection()
             try:
-                response = requests.post(f"{API_BASE_URL}/users/{self.user_id}/log_out")
-                response.raise_for_status()
-            except requests.HTTPError as e:
-                debug_print(f"API error during logout: {e}")
+                cursor.execute("USE users;")
+                cursor.execute("UPDATE users SET logged_in = FALSE WHERE id = %s", (self.user_id,))
+                conn.commit()
+            except mysql.connector.Error as e:
+                debug_print(f"Database error during logout: {e}")
+            finally:
+                cursor.close()
+                conn.close()
             self.user_id = None
             self.last_activity_update_time = None
         
@@ -212,7 +232,7 @@ class BibleTriviaApp(App):
         """Apply high contrast mode to the app."""
         if enable:
             # Define high contrast colors
-            # These colors are just examples so you can adjust them as needed
+            # These colors are just examples; you can adjust them as needed
             high_contrast_bg = [0, 0, 0, 1]  # Black background
             high_contrast_text = [1, 1, 1, 1]  # White text
             high_contrast_button = [1, 1, 0, 1]  # Yellow button
