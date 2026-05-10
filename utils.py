@@ -11,12 +11,13 @@ from log import debug_print
 
 
 def resource_path(relative_path):
-    """ Get the absolute path to the resource, works for both development and production. """
+    """Get the absolute path to the resource, works for both development and production."""
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except AttributeError:
-        base_path = os.path.abspath(".")
+        # Use the file directory instead of the current working directory.
+        base_path = os.path.dirname(os.path.abspath(__file__))
 
     return os.path.join(base_path, relative_path)
 
@@ -24,7 +25,7 @@ def resource_path(relative_path):
 LOCAL_USER_FILE = resource_path("last_logged_in.json")
 ASSETS_ZIP_PATH = resource_path("assets/assets.zip")
 TEMP_ASSETS_DIR = resource_path("temp_assets")
-INACTIVIY_THRESHOLD = 60 * 5
+INACTIVIY_THRESHOLD = 60 * 20
 API_BASE_URL = "http://127.0.0.1:8000"
 ph = PasswordHasher()
 

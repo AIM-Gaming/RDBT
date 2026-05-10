@@ -27,7 +27,8 @@ class OptionsScreen(Screen):
         self.layout = FloatLayout()
         self.add_widget(self.layout)
 
-        self.background_texture = BlurredImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
+        self.background_texture = None
+        self.texture_loaded = False
 
         self.bg_color = None
         self.bg_rect = None
@@ -67,9 +68,31 @@ class OptionsScreen(Screen):
 
     def update_bg(self, instance, value):
         """Forces the background to fill the whole screen"""
-        self.bg_rect.texture = self.background_texture
+        if getattr(self, 'background_texture', None):
+            self.bg_rect.texture = self.background_texture
         self.bg_rect.size = self.layout.size
         self.bg_rect.pos = self.layout.pos
+    
+    def on_pre_enter(self, *args):
+        """Load background texture before screen is displayed"""
+        if not self.texture_loaded:
+            try:
+                image_path = os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")
+                if os.path.exists(image_path):
+                    self.blurred_bg_obj = BlurredImage(image_path)
+                    self.background_texture = self.blurred_bg_obj.texture
+                    
+                    self.bg_rect.texture = self.background_texture
+                    self.bg_rect.size = self.layout.size
+                    self.bg_rect.pos = self.layout.pos
+                    
+                    self.layout.canvas.ask_update()
+                    self.texture_loaded = True
+                    debug_print(f"OptionsScreen background texture loaded: {image_path}")
+                else:
+                    debug_print(f"OptionsScreen background image not found: {image_path}")
+            except Exception as e:
+                debug_print(f"Error loading OptionsScreen background texture: {e}")
     
     def add_options_content(self):
         # Title

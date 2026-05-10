@@ -79,6 +79,12 @@ class BibleTriviaApp(App):
         # Show the initial screen
         self.show_screen("IntroScreen")
         return self.manager
+
+    def on_start(self):
+        if not self.user_id:
+            return
+        response = requests.post(f"{API_BASE_URL}/users/{self.user_id}/set_last_active")
+        response.raise_for_status()
     
     def on_pause(self):
         """Triggered when app is paused (e.g. minimized)"""

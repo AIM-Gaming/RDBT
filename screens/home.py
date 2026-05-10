@@ -30,9 +30,20 @@ class HomeScreen(Screen):
         self.music = None
         self.player = None
 
-        self.background_texture = None
+        from kivy.core.image import Image as CoreImage
+        # Ensure dimensions are 1920x1290
+        self.background_texture = CoreImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
+
         self.bg_color = None
         self.bg_rect = None
+
+        with self.layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            self.bg_color = Color(1, 1, 1, 1)  # White color
+            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
+        
+        self.layout.bind(pos=self.update_bg, size=self.update_bg)
+        self.update_bg(None, None)
         
         self.quiz_screen = None
         self.quiz_manager = QuizManager(bible_version=App.get_running_app().user_settings.get("bible_version", "NIV"))
@@ -86,18 +97,6 @@ class HomeScreen(Screen):
         current_app = App.get_running_app()
         user_id = current_app.user_id
         last_user = last_logged_in()
-
-        from kivy.core.image import Image as CoreImage
-        # Ensure dimensions are 1920x1290
-        self.background_texture = CoreImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
-        debug_print(f"Path exists: {os.path.exists(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"))}")
-        with self.layout.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            self.bg_color = Color(1, 1, 1, 1)  # White color
-            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
-        
-        self.layout.bind(pos=self.update_bg, size=self.update_bg)
-        self.update_bg(None, None)
 
         self.layout.add_widget(Widget(size_hint=(1, 0.1)))
         self.update_button_box()
