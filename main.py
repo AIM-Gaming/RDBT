@@ -13,6 +13,8 @@ from app import BibleTriviaApp
     # Likely just smtn to do with Kivy's backend
 # Not a bug. There is likely a lot of unnecessary calls to update_lives_display across quiz.py and home.py.
 
+# USE A .GITIGNORE FILE TO SEPARATE THE LARGE FILES INTO A FOLDER AND COMMIT THE REST INTO THE REPO
+
 # Before running the file: 
 #   run .venv\Scripts\Activate.ps1
 #   run python -m uvicorn api:app --reload
