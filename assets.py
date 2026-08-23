@@ -1,8 +1,7 @@
 import zipfile
 import os
 
-from utils import ASSETS_ZIP_PATH, TEMP_ASSETS_DIR
-from utils import debug_print
+from utils import ASSETS_ZIP_PATH, TEMP_ASSETS_DIR, debug_print
 
 def extract_video():
     """Extract the intro video before extracting other files"""
