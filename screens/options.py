@@ -27,19 +27,8 @@ class OptionsScreen(Screen):
         self.layout = FloatLayout()
         self.add_widget(self.layout)
 
-        self.background_texture = None
-        self.texture_loaded = False
-
-        self.bg_color = None
-        self.bg_rect = None
-
-        with self.layout.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            self.bg_color = Color(1, 1, 1, 1)  # White color
-            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
-        
-        self.layout.bind(pos=self.update_bg, size=self.update_bg)
-        self.update_bg(None, None)
+        self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
+        self.layout.add_widget(self.background_image)
 
         self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsScreenScroll.png"), pos_hint={"center_x": 0.5, "center_y": 0.5})
         self.layout.add_widget(self.scroll_image, index=0)

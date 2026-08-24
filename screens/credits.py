@@ -20,19 +20,8 @@ class CreditsScreen(Screen):
         self.layout = FloatLayout()  # Float layout to hold everything
         self.add_widget(self.layout)
 
-        self.background_texture = None
-        self.texture_loaded = False
-
-        self.bg_color = None
-        self.bg_rect = None
-
-        with self.layout.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            self.bg_color = Color(1, 1, 1, 1)  # White color
-            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
-        
-        self.layout.bind(pos=self.update_bg, size=self.update_bg)
-        self.update_bg(None, None)
+        self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
+        self.layout.add_widget(self.background_image)
         
         # Define the scroll view (SV)
         self.scroll_view = ScrollView(size_hint=(0.8, 0.8), pos_hint={"center_x": 0.5, "center_y": 0.5})
@@ -45,34 +34,6 @@ class CreditsScreen(Screen):
         self.layout.add_widget(self.scroll_view)  # Add scroll view to the float layout
         
         self.add_credits_content()  # Add credits content
-
-    def update_bg(self, instance, value):
-        """Forces the background to fill the whole screen"""
-        if getattr(self, 'background_texture', None):
-            self.bg_rect.texture = self.background_texture
-        self.bg_rect.size = self.layout.size
-        self.bg_rect.pos = self.layout.pos
-    
-    def on_pre_enter(self, *args):
-        """Load background texture before screen is displayed"""
-        if not self.texture_loaded:
-            try:
-                image_path = os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")
-                if os.path.exists(image_path):
-                    self.blurred_bg_obj = BlurredImage(image_path)
-                    self.background_texture = self.blurred_bg_obj.texture
-                    
-                    self.bg_rect.texture = self.background_texture
-                    self.bg_rect.size = self.layout.size
-                    self.bg_rect.pos = self.layout.pos
-                    
-                    self.layout.canvas.ask_update()
-                    self.texture_loaded = True
-                    debug_print(f"CreditsScreen background texture loaded: {image_path}")
-                else:
-                    debug_print(f"CreditsScreen background image not found: {image_path}")
-            except Exception as e:
-                debug_print(f"Error loading CreditsScreen background texture: {e}")
     
     def add_credits_content(self):
         # Title
