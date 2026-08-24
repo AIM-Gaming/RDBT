@@ -12,7 +12,7 @@ import mysql.connector
 from datetime import datetime
 from kivy.core.window import Window
 
-from utils import debug_print, last_logged_in, load_user_settings, TEMP_ASSETS_DIR, INACTIVIY_THRESHOLD
+from utils import debug_print, last_logged_in, load_user_settings, API_BASE_URL, TEMP_ASSETS_DIR, INACTIVIY_THRESHOLD
 from db import get_db_connection
 from screens.intro import IntroScreen
 from screens.home import HomeScreen
