@@ -8,6 +8,7 @@ from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
+from kivy.uix.image import Image
 
 import os
 import requests
@@ -30,20 +31,9 @@ class HomeScreen(Screen):
         self.music = None
         self.player = None
 
-        from kivy.core.image import Image as CoreImage
         # Ensure dimensions are 1920x1290
-        self.background_texture = CoreImage(os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")).texture
-
-        self.bg_color = None
-        self.bg_rect = None
-
-        with self.layout.canvas.before:
-            from kivy.graphics import Color, Rectangle
-            self.bg_color = Color(1, 1, 1, 1)  # White color
-            self.bg_rect = Rectangle(pos=self.layout.pos, size=self.layout.size)
-        
-        self.layout.bind(pos=self.update_bg, size=self.update_bg)
-        self.update_bg(None, None)
+        self.background_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
+        self.layout.add_widget(self.background_image)
         
         self.quiz_screen = None
         self.quiz_manager = QuizManager(bible_version=App.get_running_app().user_settings.get("bible_version", "NIV"))
@@ -83,13 +73,6 @@ class HomeScreen(Screen):
         
         # Box layout to hold the buttons
         self.button_box = None
-        
-
-    def update_bg(self, instance, value):
-        """Forces the background to fill the whole screen"""
-        self.bg_rect.texture = self.background_texture
-        self.bg_rect.size = self.layout.size
-        self.bg_rect.pos = self.layout.pos
     
     def on_enter(self, *args):
         self.quiz_screen = self.manager.get_screen("QuizOne")
