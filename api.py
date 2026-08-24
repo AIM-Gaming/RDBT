@@ -148,6 +148,26 @@ def check_user_progress(user_id: int) -> bool:
         cursor.close()
         conn.close()
 
+@app.get("/users/{user_id}/get_last_question")
+def get_last_question_id(user_id: int):
+    """Fetch the last question ID from the database"""
+    conn, cursor = get_db_connection()
+    
+    try:
+        cursor.execute("USE bible_trivia;")
+        cursor.execute("SELECT last_question FROM user_progress WHERE user_id = %s", (user_id,))
+        last_question_id = cursor.fetchone()[0]
+        
+        if last_question_id is not None:
+            return last_question_id
+        else:
+            return 0
+    except mysql.connector.Error:
+        return 0
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # USERS: POST
 @app.post("/users/{user_id}/save_progress")
@@ -278,6 +298,20 @@ def update_user_sfx(user_id: int, request: UpdateSfxRequest):
         cursor.close()
         conn.close()
 
+@app.post("/users/{user_id}/update_high_score")
+def update_user_high_score(user_id: int, score: int):
+    conn, cursor = get_db_connection()
+
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("UPDATE user_score SET high_score = %s WHERE user_id = %s", (score, user_id))
+        conn.commit()
+        return {"status": "success", "user_id": user_id}
+    except mysql.connector.Error as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
 
 # BIBLE TRIVIA: GET
 @app.get("/bible_trivia/questions", response_model=List[Dict[str, Any]])
@@ -352,6 +386,26 @@ def get_questions_by_ids(request: QuestionIdsRequest) -> List[Dict[str, Any]]:
         return raw_data
     except mysql.connector.Error as e:
         return {"status": "error", "message": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.get("/bible_trivia/get_last_round")
+def get_last_round() -> int:
+    """Fetch the last round number from the database"""
+    conn, cursor = get_db_connection()
+    
+    try:
+        cursor.execute("USE bible_trivia;")
+        cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
+        last_round = cursor.fetchone()[0]
+        
+        if last_round is not None:
+            return last_round
+        else:
+            return 0
+    except mysql.connector.Error:
+        return 0
     finally:
         cursor.close()
         conn.close()

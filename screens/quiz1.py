@@ -131,26 +131,6 @@ class QuizOne(Screen):
         self.manager.current = "HomeScreen"
     
     def on_pre_enter(self):
-        """Load background texture before screen is displayed"""
-        if not self.texture_loaded:
-            try:
-                image_path = os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png")
-                if os.path.exists(image_path):
-                    self.blurred_bg_obj = BlurredImage(image_path)
-                    self.background_texture = self.blurred_bg_obj.texture
-                    
-                    self.bg_rect.texture = self.background_texture
-                    self.bg_rect.size = self.layout.size
-                    self.bg_rect.pos = self.layout.pos
-                    
-                    self.layout.canvas.ask_update()
-                    self.texture_loaded = True
-                    debug_print(f"QuizOne background texture loaded in on_pre_enter: {image_path}")
-                else:
-                    debug_print(f"QuizOne background image not found: {image_path}")
-            except Exception as e:
-                debug_print(f"Error loading QuizOne background texture: {e}")
-        
         self.lives_image.opacity = 0
     
     def on_enter(self):
@@ -188,11 +168,10 @@ class QuizOne(Screen):
         
         try:
             user_id = App.get_running_app().user_id
-            conn, cursor = get_db_connection(dictionary=True)
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("SELECT current_bank_index, current_question, score, lives, time_remaining, last_question "
-                           "FROM user_progress WHERE user_id = %s", (user_id,))
-            progress = cursor.fetchone()
+
+            response = requests.get(f"{API_BASE_URL}/users/{user_id}/lim_progress")
+            response.raise_for_status()
+            progress = response.json()
             
             debug_print(f"Time remaining: {progress['time_remaining']} | Score: {progress['score']}")
             if progress and (progress["time_remaining"] < 30 or progress["score"] > 0):
@@ -200,11 +179,8 @@ class QuizOne(Screen):
             else:
                 self.quiz_manager.load_questions(shuffle=True, limit=self.quiz_manager.num_questions_per_round)
                 self.setup_question()
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in start_quiz(): {e}")
-        finally:
-            cursor.close()
-            conn.close()
+        except requests.RequestException as e:
+            debug_print(f"Error fetching progress from API: {e}")
     
     def _show_ui_elements(self):
         self.start_button.opacity = 0  # Hide start button
@@ -269,11 +245,9 @@ class QuizOne(Screen):
                     self.next_round()
             else:  # Move to the next round if not at round 4
                 debug_print("Game will move on to the next round")
-                conn, cursor = get_db_connection()
-                cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
-                last_round = cursor.fetchone()[0]
-                cursor.close()
-                conn.close()
+                response = requests.get(f"{API_BASE_URL}/bible_trivia/get_last_round")
+                response.raise_for_status()
+                last_round = response.json().get("last_round")
                 
                 if q.current_bank_index + 1 > last_round:
                     q.game_over = True
@@ -287,6 +261,7 @@ class QuizOne(Screen):
     def show_question(self):
         debug_print("show_question() accessed")
         self._reset_buttons()  # Reset buttons first
+        user_id = App.get_running_app().user_id
         
         if self.flicker_event:
             Clock.unschedule(self.flicker_event)
@@ -372,11 +347,10 @@ class QuizOne(Screen):
             self.answer_buttons[btn_name].disabled = True
             self.answer_buttons[btn_name].text = ""
         
-        conn, cursor = get_db_connection()
         try:
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("SELECT last_question FROM user_progress WHERE user_id = %s", (App.get_running_app().user_id,))
-            saved_question_id = cursor.fetchone()[0]
+            response = requests.get(f"{API_BASE_URL}/users/{user_id}/get_last_question")
+            response.raise_for_status()
+            saved_question_id = response.json()
 
             if question_data['question_id'] != saved_question_id:
                 self.quiz_manager.time_remaining = 30
@@ -384,11 +358,8 @@ class QuizOne(Screen):
                 self.quiz_manager.time_remaining = max(self.quiz_manager.time_remaining, 10)
             self.timer_label.text = f"Time: {self.quiz_manager.time_remaining}"
             self.start_timer()
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in show_question(): {e}")
-        finally:
-            cursor.close()
-            conn.close()
+        except requests.RequestException as e:
+            debug_print(f"Error fetching last question ID: {e}")
     
     def _handle_button_press(self, button, is_correct, scripture_references, answer):
         self.selected_button = button
@@ -540,13 +511,12 @@ class QuizOne(Screen):
     def finalize_next_round(self):
         # Check if there's a next round before incrementing
         debug_print("finalize_next_round() accessed")
-        conn, cursor = get_db_connection()
         try:
-            cursor.execute("SELECT MAX(question_bank_id) FROM questions;")
-            last_round = cursor.fetchone()[0]
-        finally:
-            cursor.close()
-            conn.close()
+            response = requests.get(f"{API_BASE_URL}/bible_trivia/get_last_round")
+            response.raise_for_status()
+            last_round = response.json().get("last_round")
+        except requests.RequestException as e:
+            debug_print(f"Error fetching last round: {e}")
         if self.quiz_manager.current_bank_index < last_round:
             debug_print("There are more rounds to play, moving to the next round")
             self.quiz_manager.current_bank_index += 1
@@ -577,13 +547,10 @@ class QuizOne(Screen):
         bank_index = self.quiz_manager.current_bank_index
         
         # Get high score from database
-        conn, cursor = get_db_connection()
         try:
-            cursor.execute("USE users;")
-            cursor.execute("SELECT high_score FROM user_score WHERE user_id = %s", (user_id,))
-            result = cursor.fetchone()
-            high_score = result[0] if result is not None else 0
-            
+            response = requests.get(f"{API_BASE_URL}/users/{user_id}/high_score")
+            high_score = response.json().get("high_score", 0) if response.status_code == 200 else 0
+
             self.result_label.pos_hint = {"y": 0.5}
 
             self.quit_button.pos_hint = {"center_x": 0.5, "y": 0.1}
@@ -609,19 +576,14 @@ class QuizOne(Screen):
             
             # Update high score if beaten
             if score > high_score:
-                cursor.execute(
-                    "UPDATE user_score SET high_score = %s WHERE user_id = %s",
-                    (score, user_id)
-                )
-                conn.commit()
-                self.result_label.text += "\nNew High Score!"
-        
-        except mysql.connector.Error as e:
-            debug_print(f"Database error in check_game_over(): {e}")
-        
-        finally:
-            cursor.close()
-            conn.close()
+                rsp = requests.post(f"{API_BASE_URL}/users/{user_id}/update_high_score", json={"score": score})
+                rsp.raise_for_status()
+                if rsp.status_code == 200:
+                    self.result_label.text += "\nNew High Score!"
+                else:
+                    debug_print(f"Error updating high score: {rsp.json().get('message')}")
+        except requests.RequestException as e:
+            debug_print(f"API error in check_game_over(): {e}")
         
         # Disable all UI elements
         self.question_label.opacity = 0
@@ -720,7 +682,6 @@ class QuizOne(Screen):
         
         q = self.quiz_manager
         user_id = App.get_running_app().user_id
-        conn, cursor = get_db_connection()
         
         q.used_question_ids = set()
         
@@ -735,20 +696,8 @@ class QuizOne(Screen):
         
         if reset_db:
             try:
-                cursor.execute("USE bible_trivia;")
-                cursor.execute("""
-                    UPDATE user_progress
-                    SET current_bank_index = %s, 
-                        current_question = %s, 
-                        score = %s, 
-                        lives = %s, 
-                        time_remaining = %s,
-                        last_question = NULL, 
-                        num_questions_per_round = %s, 
-                        question_id_list = NULL
-                    WHERE user_id = %s
-                """, (1, 0, 0, 4, 30, 6, user_id))
-                conn.commit()
+                response = requests.post(f"{API_BASE_URL}/users/{user_id}/reset_progress")
+                response.raise_for_status()
 
                 q.current_bank_index = 1
                 q.current_question_index = 0
@@ -759,11 +708,8 @@ class QuizOne(Screen):
                 q.num_questions_per_round = 6
                 q.used_question_ids = set()
                 debug_print(f"Progress reset!\n\tBank index: {q.current_bank_index}\n\tQuestion index: {q.current_question_index}\n\tScore: {q.score}\n\tLives: {q.lives}\n\tTime remaining: {q.time_remaining}\n\tLast question ID (should be none): {q.last_question_id}\n\tQuestion ID list (should be an empty set): {q.used_question_ids}")
-            except mysql.connector.Error as e:
-                debug_print(f"Database error in reset(): {e}")
-            finally:
-                cursor.close()
-                conn.close()
+            except requests.RequestException as e:
+                debug_print(f"API error in reset(): {e}")
         
         self.update_lives_display()
         self.start_button.opacity = 100
