@@ -247,7 +247,7 @@ class QuizOne(Screen):
                 debug_print("Game will move on to the next round")
                 response = requests.get(f"{API_BASE_URL}/bible_trivia/get_last_round")
                 response.raise_for_status()
-                last_round = response.json().get("last_round")
+                last_round = response.json()
                 
                 if q.current_bank_index + 1 > last_round:
                     q.game_over = True
@@ -514,7 +514,7 @@ class QuizOne(Screen):
         try:
             response = requests.get(f"{API_BASE_URL}/bible_trivia/get_last_round")
             response.raise_for_status()
-            last_round = response.json().get("last_round")
+            last_round = response.json()
         except requests.RequestException as e:
             debug_print(f"Error fetching last round: {e}")
         if self.quiz_manager.current_bank_index < last_round:
@@ -549,7 +549,7 @@ class QuizOne(Screen):
         # Get high score from database
         try:
             response = requests.get(f"{API_BASE_URL}/users/{user_id}/high_score")
-            high_score = response.json().get("high_score", 0) if response.status_code == 200 else 0
+            high_score = response.json() if response.status_code == 200 else 0
 
             self.result_label.pos_hint = {"y": 0.5}
 
