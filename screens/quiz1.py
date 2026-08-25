@@ -589,6 +589,7 @@ class QuizOne(Screen):
         self.question_label.opacity = 0
         self.lives_image.opacity = 0
         self.timer_label.opacity = 0
+        self.pause_button.opacity = 0
         
         for btn in self.answer_buttons.values():
             btn.opacity = 0
@@ -669,7 +670,7 @@ class QuizOne(Screen):
         self.reset(reset_db=False)
 
         home_page = self.manager.get_screen("HomeScreen")
-        home_page.has_left_game_this_session = False
+        home_page.has_left_game_this_session = True
         home_page.update_button_box()
         self.manager.transition = NoTransition()
         self.manager.current = "HomeScreen"
