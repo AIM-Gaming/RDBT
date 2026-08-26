@@ -11,6 +11,7 @@ from kivy.uix.label import Label
 from kivy.uix.slider import Slider
 from kivy.uix.spinner import Spinner
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.popup import Popup
 
 import os
 import requests
@@ -173,32 +174,46 @@ class OptionsScreen(Screen):
     def save_settings(self, instance=None):
         current_app = App.get_running_app()
         user_id = current_app.user_id
-        
-        new_master_volume = int(self.master_volume.value)
-        new_sfx_volume = int(self.sfx_volume.value)
-        new_bible_version = self.bible_versions.text
-        new_high_contrast = self.high_contrast.active
-        new_background_music = self.music_selector.selected_item
-        
-        new_settings = {
-            "master_volume": new_master_volume,
-            "sfx_volume": new_sfx_volume,
-            "bible_version": new_bible_version,
-            "high_contrast": new_high_contrast,
-            "background_music": new_background_music
-        }
+        if user_id is None:
+            logged_out_popup = Popup(
+                title="Login Error", 
+                content=Label(
+                    text="Cannot save settings as a guest\n Log in to save these changes to your account!",
+                    halign='center',
+                    valign='middle'
+                ),
+                size_hint=(0.4, 0.2))
+            logged_out_popup.open()
+            return
 
-        response = requests.post(f"{API_BASE_URL}/users/{user_id}/settings/save_settings", json=new_settings)
-        response.raise_for_status()
+        try:
+            new_master_volume = int(self.master_volume.value)
+            new_sfx_volume = int(self.sfx_volume.value)
+            new_bible_version = self.bible_versions.text
+            new_high_contrast = self.high_contrast.active
+            new_background_music = self.music_selector.selected_item
+            
+            new_settings = {
+                "master_volume": new_master_volume,
+                "sfx_volume": new_sfx_volume,
+                "bible_version": new_bible_version,
+                "high_contrast": new_high_contrast,
+                "background_music": new_background_music
+            }
+
+            response = requests.post(f"{API_BASE_URL}/users/{user_id}/settings/save_settings", json=new_settings)
+            response.raise_for_status()
+            
+            current_app.user_settings["master_volume"] = new_master_volume
+            current_app.user_settings["sfx_volume"] = new_sfx_volume
+            current_app.user_settings["bible_version"] = new_bible_version
+            current_app.user_settings["high_contrast"] = new_high_contrast
+            current_app.user_settings["background_music"] = new_background_music
         
-        current_app.user_settings["master_volume"] = new_master_volume
-        current_app.user_settings["sfx_volume"] = new_sfx_volume
-        current_app.user_settings["bible_version"] = new_bible_version
-        current_app.user_settings["high_contrast"] = new_high_contrast
-        current_app.user_settings["background_music"] = new_background_music
-        
-        self.manager.current = "HomeScreen"
-        debug_print("User settings successfully updated")
+            self.manager.current = "HomeScreen"
+            debug_print("User settings successfully updated")
+        except requests.HTTPError as e:
+            debug_print(f"Error with saving settings for user: {e}")
     
     # noinspection PyUnusedLocal
     def go_back(self, instance):

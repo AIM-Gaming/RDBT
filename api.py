@@ -333,6 +333,28 @@ def update_user_high_score(user_id: int, score: int):
         cursor.close()
         conn.close()
 
+class UserSettings(BaseModel):
+    master_volume: int
+    sfx_volume: int
+    bible_version: str
+    high_contrast: bool
+    background_music: str
+
+@app.post("/users/{user_id}/settings/save_settings")
+def save_user_settings(user_id: int, s=UserSettings):
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("""
+            UPDATE users
+            SET master_volume = %s, sfx_volume = %s, bible_version = %s, high_contrast = %s, background_music = %s
+            WHERE id = %s
+            """, (s.master_volume, s.sfx_volume, s.bible_version, s.high_contrast, s.background_music, user_id))
+        conn.commit()
+        return {"status": "success", "user_id": user_id}
+    except mysql.connector.Error as e:
+        return {"status": "error", "message": str(e)}
+
 
 # BIBLE TRIVIA: GET
 @app.get("/bible_trivia/questions", response_model=List[Dict[str, Any]])

@@ -93,7 +93,7 @@ class LoginScreen(Screen):
         else:
             username = ""
             password = ""
-            popup = Popup(title="Error", content=Label(text="Invalid username or password"), size_hint=(0.6, 0.3))
+            popup = Popup(title="Error", content=Label(text="Invalid username or password"), size_hint=(0.2, 0.1))
             popup.open()
     
     # noinspection PyUnusedLocal
