@@ -18,6 +18,8 @@ import os
 import requests
 
 from screens.login import login_user
+from widgets.blurred_image import BlurredImage
+from widgets.outlined_label import OutlinedLabel
 from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL
 
 
@@ -26,6 +28,10 @@ class RegisterScreen(Screen):
         super().__init__(**kwargs)
         
         layout = FloatLayout()
+
+        background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
+        layout.add_widget(background_image)
+
 
         # CONSTANTS
         FIELD_WIDTH = 700
@@ -41,7 +47,9 @@ class RegisterScreen(Screen):
             spacing=FIELD_SPACING
         )
 
-        login_label = Label(text="Register for Bible Trivia", font_size=40, pos_hint={"center_y": 0.75, "center_x": 0.5})
+        login_label = OutlinedLabel(text="Register for Bible Trivia", font_size=40, 
+                                    pos_hint={"center_y": 0.75, "center_x": 0.5},
+                                    outline_width=5)
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
                                         width=FIELD_WIDTH, height=FIELD_HEIGHT)
@@ -59,13 +67,13 @@ class RegisterScreen(Screen):
                                           width=FIELD_WIDTH, height=FIELD_HEIGHT)
         input_box.add_widget(self.first_name_input)
         
-        register_button = Button(size=(360, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.25},
+        register_button = Button(size=(332.8, 187.2), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.25},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
                                  border=(0, 0, 0, 0))
         register_button.bind(on_release=self.register)
         
-        login_button = Button(size=(216, 94.6), size_hint=(None, None), pos_hint={"center_x": 0.9, "top": 0.95},
+        login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.9, "top": 0.95},
                                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButton.png"),
                                    background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButtonPressed.png"),
                                    border=(0, 0, 0, 0))
@@ -99,7 +107,7 @@ class RegisterScreen(Screen):
                 App.get_running_app().user_id = user_id
                 self.home_screen = self.manager.get_screen("HomeScreen")
                 self.home_screen.logout_button.disabled = False
-            popup = Popup(title="Success", content=Label(text="Registration successful!"), size_hint=(0.6, 0.3))
+            popup = Popup(title="", content=Label(text="Registration successful!"), size_hint=(0.4, 0.2))
             popup.open()
             username = ""
             password = ""
@@ -108,10 +116,10 @@ class RegisterScreen(Screen):
             username = ""
             password = ""
             if password != confirm_pw:
-                popup = Popup(title="Error", content=Label(text="Make sure you use the same password to confirm"),
-                              size_hint=(0.6, 0.3))
+                popup = Popup(title="", content=Label(text="Make sure you use the same password to confirm"),
+                              size_hint=(0.4, 0.2))
             else:
-                popup = Popup(title="Error", content=Label(text="Username already exists"), size_hint=(0.6, 0.3))
+                popup = Popup(title="", content=Label(text="Username already exists"), size_hint=(0.4, 0.2))
             popup.open()
     
     # noinspection PyUnusedLocal

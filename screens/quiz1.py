@@ -61,8 +61,9 @@ class QuizOne(Screen):
     
     def _setup_ui(self):
         # Timer Label
-        self.timer_label = Label(text=f"Time: {self.quiz_manager.time_remaining}", size_hint=(0.3, 0.1),
-                                 pos_hint={"x": 0.7, "y": 0.83}, opacity=0, font_size=30)
+        self.timer_label = OutlinedLabel(text=f"Time: {self.quiz_manager.time_remaining}", size_hint=(0.3, 0.1),
+                                 pos_hint={"x": 0.7, "y": 0.83}, opacity=0, font_size=40,
+                                 outline_width=3)
         self.layout.add_widget(self.timer_label)
         
         # Lives Image

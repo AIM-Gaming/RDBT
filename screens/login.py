@@ -14,13 +14,17 @@ import os
 import requests
 from typing import Dict, Tuple, Optional
 
+from widgets.blurred_image import BlurredImage
+from widgets.outlined_label import OutlinedLabel
 from utils import debug_print, save_last_logged_in, load_user_settings, TEMP_ASSETS_DIR, API_BASE_URL, ph
-
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
         layout = FloatLayout()
+
+        background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
+        layout.add_widget(background_image)
 
         # CONSTANTS
         FIELD_WIDTH = 700
@@ -37,7 +41,9 @@ class LoginScreen(Screen):
             spacing=FIELD_SPACING
         )
 
-        login_label = Label(text="Login to Bible Trivia", font_size=40, pos_hint={"center_y": 0.75, "center_x": 0.5})
+        login_label = OutlinedLabel(text="Login to Bible Trivia", font_size=40, 
+                                    pos_hint={"center_y": 0.75, "center_x": 0.5},
+                                    outline_width=5)
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
                                         width=FIELD_WIDTH, height=FIELD_HEIGHT)
@@ -49,13 +55,13 @@ class LoginScreen(Screen):
         
         self.home_screen = None
         
-        login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.25},
+        login_button = Button(size=(351, 154.05), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.25},
                               background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButton.png"),
                               background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButtonPressed.png"),
                               border=(0, 0, 0, 0))
         login_button.bind(on_release=self.login)
         
-        register_button = Button(size=(288, 94.8), size_hint=(None, None), pos_hint={"center_x": 0.9, "top": 0.95},
+        register_button = Button(size=(256, 144), size_hint=(None, None), pos_hint={"center_x": 0.9, "top": 0.95},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
                                  border=(0, 0, 0, 0))
@@ -93,7 +99,7 @@ class LoginScreen(Screen):
         else:
             username = ""
             password = ""
-            popup = Popup(title="Error", content=Label(text="Invalid username or password"), size_hint=(0.2, 0.1))
+            popup = Popup(title="", content=Label(text="Invalid username or password"), size_hint=(0.4, 0.3))
             popup.open()
     
     # noinspection PyUnusedLocal
