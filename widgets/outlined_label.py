@@ -1,4 +1,4 @@
-from kivy.properties import StringProperty, NumericProperty, ListProperty
+from kivy.properties import StringProperty, NumericProperty, ListProperty, OptionProperty
 from kivy.graphics import Color, Rectangle
 from kivy.uix.widget import Widget
 from kivy.core.text import Label as CoreLabel
@@ -10,6 +10,9 @@ class OutlinedLabel(Widget):
     outline_color = ListProperty([0, 0, 0, 1])
     text_color = ListProperty([1, 1, 1, 1])
     outline_width = NumericProperty(0)  # 0 means auto
+
+    halign = OptionProperty('auto', options=['left', 'center', 'right', 'justify', 'auto'])
+    valign = OptionProperty('bottom', options=['bottom', 'middle', 'top'])
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

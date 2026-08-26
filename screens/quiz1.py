@@ -95,8 +95,8 @@ class QuizOne(Screen):
         self.layout.add_widget(self.answer_layout)
         
         # Result label
-        self.result_label = OutlinedLabel(text="Result Goes Here", size_hint=(0.8, 0.1),
-                                  pos_hint={"center_x": 0.5, "y": 0.2}, opacity=0)
+        self.result_label = OutlinedLabel(text="Result Goes Here", halign='center', valign='middle',
+                                        size_hint=(0.8, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, opacity=0)
         self.layout.add_widget(self.result_label)
         
         # Quit button
