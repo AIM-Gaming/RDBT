@@ -238,6 +238,26 @@ def reset_user_progress(user_id: int):
         cursor.close()
         conn.close()
 
+class RegisterUser(BaseModel):
+    username: str
+    password: str
+    first_name: str
+
+@app.post("/register_user")
+def register_user(user=RegisterUser):
+    conn, cursor = get_db_connection()
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("""
+            INSERT INTO users (username, password_hash, first_name) 
+            VALUES (%s, %s, %s)""", 
+            (user.username, user.password, user.first_name))
+        conn.commit()
+        cursor.execute("SELECT id FROM users WHERE username = %s", (user.username,))
+        return {"status": "success"}
+    except mysql.connector.Error as e:
+        return {"status": "error", "message": str(e)}
+
 @app.post("/users/{user_id}/log_out")
 def log_user_out(user_id: int):
     conn, cursor = get_db_connection()
@@ -312,6 +332,7 @@ def update_user_high_score(user_id: int, score: int):
     finally:
         cursor.close()
         conn.close()
+
 
 # BIBLE TRIVIA: GET
 @app.get("/bible_trivia/questions", response_model=List[Dict[str, Any]])

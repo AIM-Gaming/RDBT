@@ -141,12 +141,17 @@ def register_user(username, password, confirm_pw, first_name):
             "username": username,
             "password": password,
             "first_name": first_name
-        }).json()
-
-        if response["status"] == "success":
-            debug_print(f"User {username} registered successfully with id {response["user_id"]}")
+        })
+        response.raise_for_status()
+        data = response.json()
+        
+        if data["status"] == "success":
+            debug_print(f"User {username} registered successfully with id {data["user_id"]}")
             result = True
             return result
+        else:
+            debug_print(f"User was unable to register successfully")
+            return False
     
     except requests.HTTPError as e:
         debug_print(f"API error in register_user: {e}")
