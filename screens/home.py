@@ -12,11 +12,9 @@ from kivy.uix.image import Image
 
 import os
 import requests
-import mysql.connector
 from ffpyplayer.player import MediaPlayer
 
 from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL, play_sfx, last_logged_in
-from db import get_db_connection
 from quiz_manager import QuizManager
 from widgets.outlined_label import OutlinedLabel
 
@@ -316,6 +314,17 @@ class HomeScreen(Screen):
     def confirm_restart(self, instance):
         play_sfx("button_press_1.mp3")
         user_id = App.get_running_app().user_id
+
+        if user_id is None:
+            logged_out_popup = Popup(
+                title="Logged out",
+                content=Label(
+                    text="Create an account to play the game (for now)!"
+                ),
+                size_hint=(0.4, 0.2)
+            )
+            logged_out_popup.open()
+            return
         
         try:
             response = requests.get(f"{API_BASE_URL}/users/{user_id}/check_progress")
@@ -382,15 +391,22 @@ class HomeScreen(Screen):
         play_sfx("button_press_1.mp3")
         user_id = App.get_running_app().user_id
         debug_print(f"Attempting to resume game for user_id: {user_id}")
-        conn, cursor = get_db_connection(dictionary=True)
+
+        if user_id is None:
+            logged_out_popup = Popup(
+                title="Logged out",
+                content=Label(
+                    text="Cannot resume a separate game on a guest account"
+                ),
+                size_hint=(0.4, 0.2)
+            )
+            logged_out_popup.open()
+            return
         
         try:
-            cursor.execute("USE bible_trivia;")
-            cursor.execute("""
-                SELECT current_bank_index, current_question, score, lives, time_remaining, last_question
-                FROM user_progress WHERE user_id = %s
-            """, (user_id,))
-            progress = cursor.fetchone()
+            response = requests.get(f"{API_BASE_URL}/users/{user_id}/lim_progress")
+            response.raise_for_status()
+            progress = response.json()
             debug_print(f"Fetched progress: {progress}")
             
             if progress:
@@ -400,12 +416,9 @@ class HomeScreen(Screen):
                 self.manager.current = "QuizOne"
                 self.quiz_screen.start_quiz(None)
             else:
-                print("No progress found; unable to resume game.")
-        except mysql.connector.Error as e:
-            print(f"Database error: {e}")
-        finally:
-            cursor.close()
-            conn.close()
+                debug_print("No progress found; unable to resume game.")
+        except requests.RequestException as e:
+            debug_print(f"Error retrieving progress in resume_game(): {e}")
     
     # noinspection PyUnusedLocal
     def new_game(self, instance, *args):
@@ -442,6 +455,10 @@ class HomeScreen(Screen):
         self.login_button.size_hint = (None, None)
         self.login_button.size = (130, 130)
         self.login_button.pos_hint = {"center_x": 0.15, "top": 0.95}
+
+        # Remove resume button
+        self.update_button_box()
+
     # noinspection PyUnusedLocal
     def start_game(self, instance):
         self.manager.transition = FadeTransition()
