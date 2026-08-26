@@ -209,9 +209,12 @@ class OptionsScreen(Screen):
             current_app.user_settings["bible_version"] = new_bible_version
             current_app.user_settings["high_contrast"] = new_high_contrast
             current_app.user_settings["background_music"] = new_background_music
-        
-            self.manager.current = "HomeScreen"
+
             debug_print("User settings successfully updated")
+            success_popup = Popup(title="", content=Label(text="Successfully saved settings!"))
+            success_popup.open()
+
+            self.manager.current = "HomeScreen"
         except requests.HTTPError as e:
             debug_print(f"Error with saving settings for user: {e}")
     
