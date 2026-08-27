@@ -257,6 +257,9 @@ def register_user(user=RegisterUser):
         return {"status": "success"}
     except mysql.connector.Error as e:
         return {"status": "error", "message": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.post("/users/{user_id}/log_out")
 def log_user_out(user_id: int):
@@ -310,6 +313,21 @@ def update_user_sfx(user_id: int, request: UpdateSfxRequest):
     try:
         cursor.execute("USE users;")
         cursor.execute("UPDATE user_settings SET sfx_volume = %s WHERE user_id = %s", (request.value, user_id))
+        conn.commit()
+        return {"status": "success", "user_id": user_id}
+    except mysql.connector.Error as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.post("/users/{user_id}/settings/update_high_contrast")
+def update_user_high_constrast(user_id: int, value):
+    conn, cursor = get_db_connection()
+
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("UPDATE user_settings SET high_contrast = %s WHERE user_id = %s", (value, user_id))
         conn.commit()
         return {"status": "success", "user_id": user_id}
     except mysql.connector.Error as e:

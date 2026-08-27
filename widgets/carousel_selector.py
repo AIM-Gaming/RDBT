@@ -1,20 +1,24 @@
-from kivy.properties import StringProperty, NumericProperty, ListProperty
+from kivy.properties import StringProperty, NumericProperty, ListProperty, OptionProperty
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
-from kivy.uix.label import Label
 from kivy.clock import Clock
 
 import os
 
-from utils import TEMP_ASSETS_DIR
+from utils import TEMP_ASSETS_DIR, wrap_text
 from log import debug_print
+from widgets.outlined_label import OutlinedLabel
 
 
 class CarouselSelector(BoxLayout):
     items = ListProperty([])
     index = NumericProperty(0)
     selected_item = StringProperty("")
+
+    halign = OptionProperty('auto', options=['left', 'center', 'right', 'justify', 'auto'])
+    valign = OptionProperty('bottom', options=['bottom', 'middle', 'top'])
+
 
     def __init__(self, items=None, **kwargs):
         super().__init__(orientation='horizontal', **kwargs)
@@ -36,7 +40,7 @@ class CarouselSelector(BoxLayout):
         )
         self.right_btn.bind(on_release=self.next_item)
 
-        self.display = Label(text=self.selected_item, size_hint_x=None)
+        self.display = OutlinedLabel(text=self.selected_item, size_hint_x=None, outline_width=2)
         self.display.bind(texture_size=self._update_display_width)
         self.left_spacer = Widget(size_hint_x=1)
         self.right_spacer = Widget(size_hint_x=1)
@@ -69,7 +73,7 @@ class CarouselSelector(BoxLayout):
 
     def _display_text(self, item):
         """Remove .mp3 extension for display"""
-        return item.rsplit('.', 1)[0] if item.lower().endswith('.mp3') else item
+        return wrap_text(text=item.rsplit('.', 1)[0]) if item.lower().endswith('.mp3') else wrap_text(text=item)
     
     def _update_display_width(self, instance, value):
         # Dynamically set the label width based on its content

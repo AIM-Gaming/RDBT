@@ -18,6 +18,7 @@ import requests
 
 from utils import debug_print, update_music_volume, update_sfx_volume, TEMP_ASSETS_DIR, API_BASE_URL
 from widgets.carousel_selector import CarouselSelector
+from widgets.outlined_label import OutlinedLabel
 from widgets.blurred_image import BlurredImage
 
 
@@ -58,12 +59,12 @@ class OptionsScreen(Screen):
     
     def add_options_content(self):
         # Title
-        title_label = Label(text="Options", markup=True, font_size=50, size_hint_y=None, height=50)
+        title_label = OutlinedLabel(text="Options", markup=True, font_size=50, size_hint_y=None, height=50, outline_width=3)
         self.settings_layout.add_widget(title_label)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=20))
         
         # Volume Settings
-        volume_label = Label(text="Volume Settings", markup=True, font_size=30, size_hint_y=None, height=40)
+        volume_label = OutlinedLabel(text="Volume Settings", markup=True, font_size=30, size_hint_y=None, height=40, outline_width=3)
         self.settings_layout.add_widget(volume_label)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=20))
         
@@ -81,7 +82,7 @@ class OptionsScreen(Screen):
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=50))
         
         # Bible Version
-        bible_version_label = Label(text="Bible Version", markup=True, font_size=30, size_hint_y=None, height=40)
+        bible_version_label = OutlinedLabel(text="Bible Version", markup=True, font_size=30, size_hint_y=None, height=40, outline_width=3)
         self.settings_layout.add_widget(bible_version_label)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=10))
         
@@ -91,7 +92,7 @@ class OptionsScreen(Screen):
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=50))
 
         # Background music
-        music_label = Label(text="Background Music", markup=True, font_size=30, size_hint_y=None, height=40)
+        music_label = OutlinedLabel(text="Background Music", markup=True, font_size=30, size_hint_y=None, height=40, outline_width=3)
         self.settings_layout.add_widget(music_label)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=10))
 
@@ -105,7 +106,8 @@ class OptionsScreen(Screen):
         self.music_selector = CarouselSelector(
             items=self.music_files,
             size_hint_y=None, 
-            height=40, size_hint_x=0.4, pos_hint={"center_x": 0.5}
+            height=40, size_hint_x=0.4, pos_hint={"center_x": 0.5},
+            halign='center', valign='middle'
             )
         self.music_selector.bind(selected_item=self.play_demo_music)
         self.settings_layout.add_widget(self.music_selector)
@@ -113,15 +115,15 @@ class OptionsScreen(Screen):
         
         
         # Accessibility Options
-        accessibility_label = Label(text="Accessibility Options", markup=True, font_size=30, size_hint_y=
-        None, height=40)
+        accessibility_label = OutlinedLabel(text="Accessibility Options", markup=True, font_size=30, size_hint_y=None, 
+                                            height=40, outline_width=3)
         self.settings_layout.add_widget(accessibility_label)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=10))
         
         self.high_contrast = CheckBox(size_hint_y=None, height=40)
         self.high_contrast.active = App.get_running_app().user_settings["high_contrast"]
         self.high_contrast.bind(active=self.toggle_high_contrast)
-        self.settings_layout.add_widget(Label(text="High Contrast Mode", size_hint_y=None, height=40))
+        self.settings_layout.add_widget(OutlinedLabel(text="High Contrast Mode", size_hint_y=None, height=40, outline_width=3))
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=10))
         self.settings_layout.add_widget(self.high_contrast)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=50))

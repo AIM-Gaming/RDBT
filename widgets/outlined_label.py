@@ -1,4 +1,4 @@
-from kivy.properties import StringProperty, NumericProperty, ListProperty, OptionProperty
+from kivy.properties import StringProperty, NumericProperty, ListProperty, OptionProperty, BooleanProperty
 from kivy.graphics import Color, Rectangle
 from kivy.uix.widget import Widget
 from kivy.core.text import Label as CoreLabel
@@ -6,10 +6,12 @@ from kivy.core.text import Label as CoreLabel
 
 class OutlinedLabel(Widget):
     text = StringProperty("")
+    texture_size = ListProperty([0, 0])
     font_size = NumericProperty(30)
     outline_color = ListProperty([0, 0, 0, 1])
     text_color = ListProperty([1, 1, 1, 1])
     outline_width = NumericProperty(0)  # 0 means auto
+    markup = BooleanProperty(False)
 
     halign = OptionProperty('auto', options=['left', 'center', 'right', 'justify', 'auto'])
     valign = OptionProperty('bottom', options=['bottom', 'middle', 'top'])
@@ -17,11 +19,12 @@ class OutlinedLabel(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.texture_size = (0, 0)
-        self.bind(pos=self._update_canvas, 
-                  text=self._update_canvas, 
+        self.bind(pos=self._update_canvas,
+                  text=self._update_canvas,
+                  markup=self._update_canvas,
                   font_size=self._update_canvas,
-                  outline_color=self._update_canvas, 
-                  text_color=self._update_canvas, 
+                  outline_color=self._update_canvas,
+                  text_color=self._update_canvas,
                   center=self._update_canvas,
                   size=self._update_canvas)
         self._update_canvas()
@@ -29,7 +32,7 @@ class OutlinedLabel(Widget):
     # noinspection PyUnusedLocal
     def _update_canvas(self, *args):
         self.canvas.clear()
-        label = CoreLabel(text=self.text, font_size=self.font_size)
+        label = CoreLabel(text=self.text, font_size=self.font_size, markup=self.markup)
         label.refresh()
         texture = label.texture
         self.texture_size = texture.size
