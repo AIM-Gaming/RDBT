@@ -71,13 +71,13 @@ class OptionsScreen(Screen):
         self.master_volume = Slider(min=0, max=100, value=50, size_hint_y=None, height=40, size_hint_x=0.4,
                                     pos_hint={"center_x": 0.5})
         self.master_volume.bind(value=update_music_volume)  # Update music volume
-        self.settings_layout.add_widget(Label(text="Master Volume", size_hint_y=None, height=10))
+        self.settings_layout.add_widget(OutlinedLabel(text="Master Volume", size_hint_y=None, height=10))
         self.settings_layout.add_widget(self.master_volume)
         
         self.sfx_volume = Slider(min=0, max=100, value=App.get_running_app().user_settings["sfx_volume"],
                                  size_hint_y=None, height=40, size_hint_x=0.4, pos_hint={"center_x": 0.5})
         self.sfx_volume.bind(value=update_sfx_volume)
-        self.settings_layout.add_widget(Label(text="SFX Volume", size_hint_y=None, height=10))
+        self.settings_layout.add_widget(OutlinedLabel(text="SFX Volume", size_hint_y=None, height=10))
         self.settings_layout.add_widget(self.sfx_volume)
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=50))
         
@@ -106,7 +106,7 @@ class OptionsScreen(Screen):
         self.music_selector = CarouselSelector(
             items=self.music_files,
             size_hint_y=None, 
-            height=40, size_hint_x=0.4, pos_hint={"center_x": 0.5},
+            height=80, size_hint_x=0.55, pos_hint={"center_x": 0.5},
             halign='center', valign='middle'
             )
         self.music_selector.bind(selected_item=self.play_demo_music)

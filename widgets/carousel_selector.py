@@ -1,6 +1,7 @@
 from kivy.properties import StringProperty, NumericProperty, ListProperty, OptionProperty
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
 
@@ -40,15 +41,15 @@ class CarouselSelector(BoxLayout):
         )
         self.right_btn.bind(on_release=self.next_item)
 
-        self.display = OutlinedLabel(text=self.selected_item, size_hint_x=None, outline_width=2)
+        self.display_area = FloatLayout(size_hint_x=1)
+        self.display = OutlinedLabel(text=self.selected_item, size_hint=(None, 1), outline_width=2,
+                                     halign=self.halign, valign=self.valign,
+                                     pos_hint={"center_x": 0.5, "center_y": 0.5})
         self.display.bind(texture_size=self._update_display_width)
-        self.left_spacer = Widget(size_hint_x=1)
-        self.right_spacer = Widget(size_hint_x=1)
+        self.display_area.add_widget(self.display)
 
         self.add_widget(self.left_btn)
-        self.add_widget(self.left_spacer)
-        self.add_widget(self.display)
-        self.add_widget(self.right_spacer)
+        self.add_widget(self.display_area)
         self.add_widget(self.right_btn)
 
         self.update_display()
@@ -73,16 +74,11 @@ class CarouselSelector(BoxLayout):
 
     def _display_text(self, item):
         """Remove .mp3 extension for display"""
-        return wrap_text(text=item.rsplit('.', 1)[0]) if item.lower().endswith('.mp3') else wrap_text(text=item)
+        return wrap_text(text=item.rsplit('.', 1)[0], width=20) if item.lower().endswith('.mp3') else wrap_text(text=item, width=20)
     
     def _update_display_width(self, instance, value):
-        # Dynamically set the label width based on its content
         # Update width for the instance, add padding
-        new_width = instance.texture_size[0] + 20  # Padding
-        instance.width = new_width
-        # Only recenter if this is the main display label
-        if instance == self.display and self.parent:
-            self.center_to_parent()
+        instance.width = instance.texture_size[0] + 20
     
     def center_to_parent(self, *args):
         if not self.parent:

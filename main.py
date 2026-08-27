@@ -2,11 +2,6 @@ import os
 
 from assets import extract_video, extract_assets
 
-# LOW-PRIORITY BUGS:
-# Carousel centering is good enough for now, recalculate later
-    # Note: When the CarouselSelector's width is increased, it remains that way until the app is closed.
-
-
 # Before running the file: 
 #   run .venv\Scripts\Activate.ps1
 #   run python -m uvicorn api:app --reload
