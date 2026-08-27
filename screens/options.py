@@ -32,7 +32,7 @@ class OptionsScreen(Screen):
         self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
         self.layout.add_widget(self.background_image)
 
-        self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "OptionsScreenScroll.png"), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "PapyrusScroll.png"), pos_hint={"center_x": 0.5, "center_y": 0.5})
         self.layout.add_widget(self.scroll_image, index=0)
 
         self.papyrus_container = FloatLayout(size=(1000, 1100), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.5})        
@@ -106,7 +106,7 @@ class OptionsScreen(Screen):
         self.music_selector = CarouselSelector(
             items=self.music_files,
             size_hint_y=None, 
-            height=80, size_hint_x=0.55, pos_hint={"center_x": 0.5},
+            height=80, size_hint_x=0.5, pos_hint={"center_x": 0.5},
             halign='center', valign='middle'
             )
         self.music_selector.bind(selected_item=self.play_demo_music)

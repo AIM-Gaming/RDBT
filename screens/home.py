@@ -3,7 +3,6 @@ from kivy.uix.screenmanager import Screen, FadeTransition, SlideTransition
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.relativelayout import RelativeLayout
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
@@ -38,6 +37,11 @@ class HomeScreen(Screen):
 
         # Flag for resume button
         self.has_left_game_this_session = False
+
+        # Title card
+        self.title_card = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "TitleCard.png"), pos_hint={"center_x": 0.5, "top": 1},
+                                size_hint=(0.75, 0.375))
+        self.layout.add_widget(self.title_card)
 
         # Version label
         self.version_label = OutlinedLabel(text=f"v{App.get_running_app().version}", font_size=30, size_hint=(None, None), size=(200, 50), pos_hint={"left": 0.05, "bottom": 0.05}, outline_color=[0, 0, 0, 1], text_color=[1, 1, 1, 1])
