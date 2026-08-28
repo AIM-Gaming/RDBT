@@ -24,7 +24,7 @@ class CreditsScreen(Screen):
         self.background_image = BlurredImage(source=os.path.join(TEMP_ASSETS_DIR, "images", "HomeScreenBackground.png"), allow_stretch=True, keep_ratio=False)
         self.layout.add_widget(self.background_image)
 
-        self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "PapyrusScroll.png"), pos_hint={"center_x": 0.45, "center_y": 0.5})
+        self.scroll_image = Image(source=os.path.join(TEMP_ASSETS_DIR, "images", "PapyrusScroll.png"), pos_hint={"center_x": 0.49, "center_y": 0.5})
         self.layout.add_widget(self.scroll_image, index=0)
         
         # Define the scroll view (SV)

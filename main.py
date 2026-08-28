@@ -2,6 +2,9 @@ import os
 
 from assets import extract_video, extract_assets
 
+# Credits ScrollView is longer than the OptionsScreen but uses the same
+#   size scroll_image as OptionsScreen
+
 # Before running the file: 
 #   run .venv\Scripts\Activate.ps1
 #   run python -m uvicorn api:app --reload
