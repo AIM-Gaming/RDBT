@@ -363,17 +363,13 @@ class HomeScreen(Screen):
                     border=(0, 0, 0, 0),
                     on_release=lambda btn: (popup.dismiss(), self.resume_game(btn))
                 ))
-                cancel_vbox = BoxLayout(orientation="vertical", size_hint=(None, None), width=215, height=BUTTON_HEIGHT)
-                cancel_vbox.add_widget(Widget(size_hint_y=1))
-                cancel_vbox.add_widget(Button(
-                    size_hint=(None, None), size=(215, 70),
-                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "CancelButton.png"), 
+                button_box.add_widget(Button(
+                    size_hint=(None, None), size=(BUTTON_WIDTH, BUTTON_HEIGHT),
+                    background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "CancelButton.png"),
                     background_down=os.path.join(TEMP_ASSETS_DIR, "images", "CancelButtonPressed.png"),
                     border=(0, 0, 0, 0),
                     on_release=lambda btn: popup.dismiss()
                 ))
-                cancel_vbox.add_widget(Widget(size_hint_y=1))
-                button_box.add_widget(cancel_vbox)
                 button_box.add_widget(Widget(size_hint_x=1)) # Right spacer
                 content.add_widget(button_box)
 

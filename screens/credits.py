@@ -11,7 +11,8 @@ import os
 
 from widgets.clickable_label import ClickableLabel
 from widgets.blurred_image import BlurredImage
-from utils import TEMP_ASSETS_DIR, debug_print
+from widgets.outlined_label import OutlinedLabel
+from utils import TEMP_ASSETS_DIR, wrap_text, debug_print
 
 
 class CreditsScreen(Screen):
@@ -28,7 +29,7 @@ class CreditsScreen(Screen):
         self.layout.add_widget(self.scroll_image, index=0)
         
         # Define the scroll view (SV)
-        self.scroll_view = ScrollView(size_hint=(0.8, 0.8), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        self.scroll_view = ScrollView(size_hint=(0.8, 0.7), pos_hint={"center_x": 0.5, "center_y": 0.5})
         
         # Content layout inside the scroll view
         self.content_layout = BoxLayout(orientation="vertical", size_hint_y=None)
@@ -41,12 +42,12 @@ class CreditsScreen(Screen):
     
     def add_credits_content(self):
         # Title
-        title_label = Label(text="[b]Credits[/b]", markup=True, font_size=50, size_hint_y=None, height=50)
+        title_label = OutlinedLabel(text="Credits", markup=True, font_size=50, size_hint_y=None, height=50, outline_width=3)
         self.content_layout.add_widget(title_label)
         self.content_layout.add_widget(Widget(size_hint_y=None, height=50))
         
         # Development
-        dev_label = Label(text="[b]Development[/b]", markup=True, font_size=35, size_hint_y=None, height=50)
+        dev_label = OutlinedLabel(text="Development", markup=True, font_size=35, size_hint_y=None, height=50, outline_width=3)
         self.content_layout.add_widget(dev_label)
         self.content_layout.add_widget(Widget(size_hint_y=None, height=20))
         
@@ -55,13 +56,13 @@ class CreditsScreen(Screen):
             {"name": "Genson Pageot", "role": "Lead Graphic Designer (supposedly)"}
         ]
         for dev in dev_content:
-            developers = Label(text=f"{dev['name']} - {dev['role']}", markup=True, size_hint_y=None, font_size=30)
+            developers = OutlinedLabel(text=wrap_text(text=wrap_text(f"{dev['name']} - {dev['role']}", width=25)), markup=True, size_hint_y=None, font_size=30, outline_width=2)
             self.content_layout.add_widget(developers)
             self.content_layout.add_widget(Widget(size_hint_y=None, height=10))
         self.content_layout.add_widget(Widget(size_hint_y=None, height=40))
         
         # Research
-        research_label = Label(text="[b]Research[/b]", markup=True, font_size=35, size_hint_y=None, height=50)
+        research_label = OutlinedLabel(text=wrap_text(text="Research"), markup=True, font_size=35, size_hint_y=None, height=50, outline_width=3)
         self.content_layout.add_widget(research_label)
         self.content_layout.add_widget(Widget(size_hint_y=None, height=20))
         
@@ -69,13 +70,13 @@ class CreditsScreen(Screen):
             {"name": "Soneal Pageot", "role": "Researcher"},
         ]
         for res in research_content:
-            researchers = Label(text=f"{res['name']}", markup=True, size_hint_y=None, font_size=30)
+            researchers = OutlinedLabel(text=wrap_text(text=wrap_text(f"{res['name']}", width=25)), markup=True, size_hint_y=None, font_size=30, outline_width=2)
             self.content_layout.add_widget(researchers)
             self.content_layout.add_widget(Widget(size_hint_y=None, height=10))
         self.content_layout.add_widget(Widget(size_hint_y=None, height=40))
 
         # Sound Design
-        sound_label = Label(text="[b]Sound Design[/b]", markup=True, font_size=35, size_hint_y=None, height=50)
+        sound_label = OutlinedLabel(text=wrap_text(text="Sound Design"), markup=True, font_size=35, size_hint_y=None, height=50, outline_width=3)
         self.content_layout.add_widget(sound_label)
         self.content_layout.add_widget(Widget(size_hint_y=None, height=20))
         
@@ -85,15 +86,15 @@ class CreditsScreen(Screen):
         ]
         for sound in sound_content:
             if sound["url"]:
-                sound_design = ClickableLabel(text=f"{sound['name']} | {sound['role']}", markup=True, size_hint_y=None, font_size=30, url=sound["url"])
+                sound_design = ClickableLabel(text=wrap_text(f"{sound['name']} | {sound['role']}", width=25), markup=True, size_hint_y=None, font_size=30, url=sound["url"])
             else:
-                sound_design = Label(text=f"{sound['name']} | {sound['role']}", markup=True, size_hint_y=None, font_size=30)
+                sound_design = OutlinedLabel(text=f"{sound['name']} | {sound['role']}", markup=True, size_hint_y=None, font_size=30, outline_width=2)
             self.content_layout.add_widget(sound_design)
             self.content_layout.add_widget(Widget(size_hint_y=None, height=10))
         self.content_layout.add_widget(Widget(size_hint_y=None, height=40))
         
         # Special Thanks
-        thanks_label = Label(text="[b]Special Thanks[/b]", markup=True, font_size=35, size_hint_y=None, height=50)
+        thanks_label = OutlinedLabel(text=wrap_text(text="Special Thanks"), markup=True, font_size=35, size_hint_y=None, height=50, outline_width=3)
         self.content_layout.add_widget(thanks_label)
         self.content_layout.add_widget(Widget(size_hint_y=None, height=20))
         
@@ -109,7 +110,7 @@ class CreditsScreen(Screen):
             {"name": "YOU"}
         ]
         for thx in thanks_content:
-            mvp = Label(text=f"{thx['name']}", markup=True, size_hint_y=None, font_size=30)
+            mvp = OutlinedLabel(text=wrap_text(text=f"{thx['name']}", width=25), markup=True, size_hint_y=None, font_size=30, outline_width=2)
             self.content_layout.add_widget(mvp)
             self.content_layout.add_widget(Widget(size_hint_y=None, height=10))
         self.content_layout.add_widget(Widget(size_hint_y=None, height=40))
