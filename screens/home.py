@@ -146,7 +146,7 @@ class HomeScreen(Screen):
                 return
         
         try:
-            if reset and self.player:  # App has a chance of crashing upon restart
+            if reset and self.player:
                 debug_print("Resetting existing player")
                 Clock.unschedule(self.check_player_state)
                 

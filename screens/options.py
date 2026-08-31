@@ -203,7 +203,10 @@ class OptionsScreen(Screen):
                 "background_music": new_background_music
             }
 
-            response = requests.post(f"{API_BASE_URL}/users/{user_id}/settings/save_settings", json=new_settings)
+            response = requests.post(
+                f"{API_BASE_URL}/users/{user_id}/settings/save_settings", 
+                json=new_settings
+            )
             response.raise_for_status()
             
             current_app.user_settings["master_volume"] = new_master_volume
@@ -213,10 +216,27 @@ class OptionsScreen(Screen):
             current_app.user_settings["background_music"] = new_background_music
 
             debug_print("User settings successfully updated")
-            success_popup = Popup(title="", content=Label(text="Successfully saved settings!"))
+            success_popup = Popup(
+                title="", 
+                content=Label(text="Successfully saved settings!"),
+                size_hint=(0.4, 0.2))
             success_popup.open()
 
             self.manager.current = "HomeScreen"
+        except requests.exceptions.RequestException as e:
+            debug_print(f"Error saving settings: {e}")
+            error_msg = "Could not connect to server."
+            if e.response is not None:
+                try:
+                    error_msg = e.response.json().get("detail", e.repsonse.text)
+                except Exception:
+                    error_msg = str(e)
+            error_popup = Popup(
+                title="Save Failed",
+                content=Label(text=f"Failed to save settings:\n{error_msg}", halign='center', valign='middle'),
+                size_hint=(0.6, 0.3)
+            )
+            error_popup.open()
         except requests.HTTPError as e:
             debug_print(f"Error with saving settings for user: {e}")
     

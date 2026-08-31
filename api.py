@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 import mysql.connector
 from typing import List, Optional, Dict, Any
@@ -359,19 +359,31 @@ class UserSettings(BaseModel):
     background_music: str
 
 @app.post("/users/{user_id}/settings/save_settings")
-def save_user_settings(user_id: int, s=UserSettings):
+def save_user_settings(user_id: int, s: UserSettings):
     conn, cursor = get_db_connection()
     try:
         cursor.execute("USE users;")
         cursor.execute("""
-            UPDATE users
+            UPDATE user_settings
             SET master_volume = %s, sfx_volume = %s, bible_version = %s, high_contrast = %s, background_music = %s
-            WHERE id = %s
-            """, (s.master_volume, s.sfx_volume, s.bible_version, s.high_contrast, s.background_music, user_id))
+            WHERE user_id = %s
+        """, (
+            s.master_volume, s.sfx_volume,
+            s.bible_version, s.high_contrast,
+            s.background_music, user_id
+        ))
         conn.commit()
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with id {user_id} not found in user_settings"
+            )
         return {"status": "success", "user_id": user_id}
     except mysql.connector.Error as e:
-        return {"status": "error", "message": str(e)}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
 
 
 # BIBLE TRIVIA: GET
