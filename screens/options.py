@@ -206,10 +206,6 @@ class OptionsScreen(Screen):
             new_bible_version = self.bible_versions.text
             new_high_contrast = self.high_contrast.active
             new_background_music = self.music_selector.selected_item
-            '''
-                Game saves and plays the correct music, but starts up with the music selector on the first
-                item, somehow causing it to save once the app is clsoed. Test to see if this is true.
-            '''
             
             new_settings = {
                 "master_volume": new_master_volume,
