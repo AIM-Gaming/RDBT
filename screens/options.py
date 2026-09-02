@@ -89,6 +89,11 @@ class OptionsScreen(Screen):
         self.bible_versions = Spinner(text="NIV", values=("NIV", "KJV", "ESV", "NKJV", "NLT"), size_hint_y=None,
                                       height=40, size_hint_x=0.2, pos_hint={"center_x": 0.5})
         self.settings_layout.add_widget(self.bible_versions)
+        self.settings_layout.add_widget(
+            OutlinedLabel(
+                text="Does not affect questions", font_size=22, text_color=[0.55, 0.27, 0.07, 1], outline_color=[1, 1, 1, 1]
+            )
+        )
         self.settings_layout.add_widget(Widget(size_hint_y=None, height=50))
 
         # Background music
@@ -144,6 +149,13 @@ class OptionsScreen(Screen):
                              border=(0, 0, 0, 0))
         back_button.bind(on_release=self.go_back)
         self.layout.add_widget(back_button)
+
+    def on_enter(self, *args):
+        saved_music = App.get_running_app().user_settings["background_music"]
+        saved_music_index = self.music_files.index(saved_music)
+        debug_print(f"Music in app (should match DB item): {saved_music} | Index: {saved_music_index}")
+        self.music_selector.index = saved_music_index
+        self.music_selector.update_display()
     
     def toggle_high_contrast(self, instance, value):
         current_app = App.get_running_app()
