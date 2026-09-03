@@ -169,12 +169,13 @@ class OptionsScreen(Screen):
     def play_demo_music(self, instance, value):
         home_screen = self.manager.get_screen("HomeScreen")
         if home_screen.player:
-            try:
-                home_screen.player.set_pause(True)
-                home_screen.player.close_player()
-                home_screen.player = None
-            except Exception as e:
-                debug_print(f"Error stopping music: {e}")
+            # if home_screen.player.object != App.get_running_app().user_settings["backgorund_music"]:
+                try:
+                    home_screen.player.set_pause(True)
+                    home_screen.player.close_player()
+                    home_screen.player = None
+                except Exception as e:
+                    debug_print(f"Error stopping music: {e}")
 
         if value:
             try:
