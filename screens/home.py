@@ -479,5 +479,5 @@ class HomeScreen(Screen):
     # noinspection PyUnusedLocal
     def open_login(self, instance):
         play_sfx("button_press_1.mp3")
-        self.manager.transition = SlideTransition(direction='left')
+        self.manager.transition = FadeTransition()
         self.manager.current = "LoginScreen"
