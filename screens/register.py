@@ -13,6 +13,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
+from kivy.graphics import Color, Rectangle
 
 import os
 import requests
@@ -39,6 +40,20 @@ class RegisterScreen(Screen):
         FIELD_SPACING = 20
         box_height = FIELD_HEIGHT * 4 + FIELD_SPACING
 
+        board_layout = FloatLayout(
+            size_hint=(None, None),
+            size=(1000, 750),
+            pos_hint={"center_x": 0.5, "center_y": 0.5}
+        )
+        with board_layout.canvas.before:
+            Color(1, 0, 0, 1)
+            rect = Rectangle(pos=board_layout.pos, size=board_layout.pos)
+        def update_rect(instance, value):
+            rect.pos = instance.pos
+            rect.size = instance.size
+        board_layout.bind(pos=update_rect, size=update_rect)
+
+
         input_box = BoxLayout(
             orientation="vertical",
             size_hint=(None, None),
@@ -48,7 +63,7 @@ class RegisterScreen(Screen):
         )
 
         login_label = OutlinedLabel(text="Register for Bible Trivia", font_size=40, 
-                                    pos_hint={"center_y": 0.75, "center_x": 0.5},
+                                    pos_hint={"center_y": 0.85, "center_x": 0.5},
                                     outline_width=5)
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
@@ -67,7 +82,7 @@ class RegisterScreen(Screen):
                                           width=FIELD_WIDTH, height=FIELD_HEIGHT)
         input_box.add_widget(self.first_name_input)
         
-        register_button = Button(size=(332.8, 187.2), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.25},
+        register_button = Button(size=(332.8, 187.2), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.15},
                                  background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
                                  background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
                                  border=(0, 0, 0, 0))
@@ -86,9 +101,10 @@ class RegisterScreen(Screen):
         home_button.bind(on_release=self.go_back)
         layout.add_widget(home_button)
         
-        layout.add_widget(login_label)
-        layout.add_widget(input_box)
-        layout.add_widget(register_button)
+        board_layout.add_widget(login_label)
+        board_layout.add_widget(input_box)
+        board_layout.add_widget(register_button)
+        layout.add_widget(board_layout)
         layout.add_widget(login_button)
         
         self.add_widget(layout)
@@ -113,14 +129,19 @@ class RegisterScreen(Screen):
             password = ""
             self.manager.current = "HomeScreen"
         else:
-            username = ""
-            password = ""
             if password != confirm_pw:
                 popup = Popup(title="", content=Label(text="Make sure you use the same password to confirm"),
                               size_hint=(0.4, 0.2))
+            elif not username.strip():
+                popup = Popup(title="", content=Label(text="Stop tryna be anonymous"), size_hint=(0.4, 0.2))
+                popup.open()
             else:
                 popup = Popup(title="", content=Label(text="Username already exists"), size_hint=(0.4, 0.2))
             popup.open()
+
+            username = ""
+            password = ""
+
     
     # noinspection PyUnusedLocal
     def open_login(self, instance):
