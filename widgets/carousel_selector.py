@@ -67,8 +67,6 @@ class CarouselSelector(BoxLayout):
     def update_display(self):
         self.selected_item = self.items[self.index] if self.items else ""
         self.display.text = self._display_text(self.selected_item)
-
-        # self.display.texture_update()
         
         self._update_display_width(self.display, None)
 
@@ -80,13 +78,3 @@ class CarouselSelector(BoxLayout):
         # Update width for the instance, add padding
         instance.width = instance.texture_size[0] + 20
     
-    def center_to_parent(self, *args):
-        if not self.parent:
-            return
-        
-        parent_center = self.parent.to_window(self.parent.center_x, self.parent.center_y)[0]
-        display_center = self.display.to_window(self.display.center_x, self.display.center_y)[0]
-        shift = (parent_center - display_center) / 2 # Good enough for now, recalculate later
-
-        self.x += shift
-        debug_print(F"Shifted by {shift} pixels")

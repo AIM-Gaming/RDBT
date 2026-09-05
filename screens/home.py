@@ -373,7 +373,7 @@ class HomeScreen(Screen):
                 button_box.add_widget(Widget(size_hint_x=1)) # Right spacer
                 content.add_widget(button_box)
 
-                popup = Popup(title="", content=content, size_hint=(0.6, 0.27))
+                popup = Popup(title="", content=content, size_hint=(0.6, 0.3))
                 popup.open()  # Prompt the user with the decision to start a new game or resume the previous one
             else:
                 debug_print("There is no progress")

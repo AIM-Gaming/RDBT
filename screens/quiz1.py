@@ -639,9 +639,9 @@ class QuizOne(Screen):
 
             content.add_widget(button_box)
             
-            popup = Popup(title="", content=content, size_hint=(0.6, 0.8))
+            popup = Popup(title="", content=content, size_hint=(0.4, 0.3))
 
-            def on_popup_dismiss(*_args):
+            def on_popup_dismiss(*_args):  # Continue the paused timer if user just dismisses the popup
                 if not getattr(self, "_quit_confirmed", False):
                     self.start_timer()
                 self._quit_confirmed = False
