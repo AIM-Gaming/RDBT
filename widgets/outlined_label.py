@@ -13,6 +13,7 @@ class OutlinedLabel(Widget):
     text_color = ListProperty([1, 1, 1, 1])
     outline_width = NumericProperty(0)  # 0 means auto
     markup = BooleanProperty(False)
+    font_style = StringProperty("")
 
     halign = OptionProperty('auto', options=['left', 'center', 'right', 'justify', 'auto'])
     valign = OptionProperty('bottom', options=['bottom', 'middle', 'top'])
@@ -24,6 +25,7 @@ class OutlinedLabel(Widget):
                   text=self._update_canvas,
                   markup=self._update_canvas,
                   font_size=self._update_canvas,
+                  font_style=self._update_canvas,
                   outline_color=self._update_canvas,
                   text_color=self._update_canvas,
                   center=self._update_canvas,
@@ -33,7 +35,8 @@ class OutlinedLabel(Widget):
     # noinspection PyUnusedLocal
     def _update_canvas(self, *args):
         self.canvas.clear()
-        label = CoreLabel(text=self.text, font_size=self.font_size, markup=self.markup)
+        label = CoreLabel(text=self.text, font_size=self.font_size, markup=self.markup,
+                  font_name=self.font_style or 'Roboto')
         label.refresh()
         texture = label.texture
         self.texture_size = texture.size

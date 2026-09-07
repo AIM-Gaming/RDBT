@@ -4,7 +4,6 @@ from kivy.uix.screenmanager import Screen, NoTransition, FadeTransition
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
-# from kivy.core.text import LabelBase
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
@@ -30,7 +29,7 @@ class LoginScreen(Screen):
         # CONSTANTS
         FIELD_WIDTH = 700
         FIELD_HEIGHT = 60
-        FIELD_SPACING = 20
+        FIELD_SPACING = 130
         box_height = FIELD_HEIGHT * 2 + FIELD_SPACING
 
         board_layout = FloatLayout(
@@ -51,13 +50,13 @@ class LoginScreen(Screen):
             orientation="vertical",
             size_hint=(None, None),
             width=FIELD_WIDTH, height=box_height,
-            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            pos_hint={"center_x": 0.5, "center_y": 0.46},
             spacing=FIELD_SPACING
         )
 
         login_label = OutlinedLabel(text="Login to Bible Trivia", font_size=40, 
-                                    pos_hint={"center_y": 0.75, "center_x": 0.5},
-                                    outline_width=5)
+                                    pos_hint={"center_y": 1, "center_x": 0.5},
+                                    outline_width=5, font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-Black.ttf"))
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
                                         width=FIELD_WIDTH, height=FIELD_HEIGHT)
@@ -69,7 +68,7 @@ class LoginScreen(Screen):
         
         self.home_screen = None
         
-        login_button = Button(size=(351, 154.05), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0.15},
+        login_button = Button(size=(351, 154.05), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": -0.1},
                               background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButton.png"),
                               background_down=os.path.join(TEMP_ASSETS_DIR, "images", "LoginButtonPressed.png"),
                               border=(0, 0, 0, 0))
