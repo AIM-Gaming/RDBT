@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.properties import StringProperty, NumericProperty, ListProperty
-from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
+from kivy.uix.screenmanager import Screen, NoTransition, FadeTransition
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -136,7 +136,7 @@ class LoginScreen(Screen):
     
     # noinspection PyUnusedLocal
     def go_back(self, instance):
-        self.manager.transition = SlideTransition(direction='right')
+        self.manager.transition = FadeTransition()
         self.manager.current = "HomeScreen"
     
     def on_leave(self):
