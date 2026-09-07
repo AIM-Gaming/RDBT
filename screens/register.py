@@ -1,5 +1,5 @@
 from kivy.app import App
-from kivy.uix.screenmanager import Screen, NoTransition
+from kivy.uix.screenmanager import Screen, NoTransition, FadeTransition
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -21,7 +21,7 @@ import requests
 from screens.login import login_user
 from widgets.blurred_image import BlurredImage
 from widgets.outlined_label import OutlinedLabel
-from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL
+from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL, ph
 
 
 class RegisterScreen(Screen):
@@ -115,6 +115,27 @@ class RegisterScreen(Screen):
         password = self.password_input.text
         confirm_pw = self.confirm_password_input.text
         first_name = self.first_name_input.text
+
+
+        if not username.strip():
+            self.show_popup("Stop tryna be anonymous")
+            return
+        if len(username.strip()) < 4:
+            self.show_popup("Your username must be at least 4 characters long")
+        if not password:
+            self.show_popup("Please enter a password for your account")
+            return
+        if len(password) < 8:
+            self.show_popup("Your password must be at least 8 characters long")
+            return
+        if password != confirm_pw or not confirm_pw:
+            popup = Popup(title="", content=Label(text="Make sure you use the same password to confirm"),
+                            size_hint=(0.4, 0.2)
+            )
+            return
+        if not first_name:
+            self.show_popup("Enter your first name")
+            return
         
         success = register_user(username, password, confirm_pw, first_name)
         if success:
@@ -123,24 +144,24 @@ class RegisterScreen(Screen):
                 App.get_running_app().user_id = user_id
                 self.home_screen = self.manager.get_screen("HomeScreen")
                 self.home_screen.logout_button.disabled = False
-            popup = Popup(title="", content=Label(text="Registration successful!"), size_hint=(0.4, 0.2))
-            popup.open()
+            self.show_popup("Registration successful!")
             username = ""
             password = ""
             self.manager.current = "HomeScreen"
         else:
-            if password != confirm_pw:
-                popup = Popup(title="", content=Label(text="Make sure you use the same password to confirm"),
-                              size_hint=(0.4, 0.2))
-            elif not username.strip():
-                popup = Popup(title="", content=Label(text="Stop tryna be anonymous"), size_hint=(0.4, 0.2))
-                popup.open()
-            else:
-                popup = Popup(title="", content=Label(text="Username already exists"), size_hint=(0.4, 0.2))
-            popup.open()
-
             username = ""
             password = ""
+
+    def show_popup(self, message):
+        Popup(
+            title="",
+            content=OutlinedLabel(
+                text=message, text_color=[0, 0, 0, 1],
+                outline_color=[1, 1, 1, 1],
+                font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
+            ),
+            size_hint=(0.4, 0.2)
+        ).open()
 
     
     # noinspection PyUnusedLocal
@@ -150,7 +171,7 @@ class RegisterScreen(Screen):
     
     # noinspection PyUnusedLocal
     def go_back(self, instance):
-        self.manager.transition = NoTransition()
+        self.manager.transition = FadeTransition()
         self.manager.current = "HomeScreen"
     
     def on_leave(self):
@@ -160,28 +181,46 @@ class RegisterScreen(Screen):
 
 def register_user(username, password, confirm_pw, first_name):
     result = False
+    def show_popup(message):
+        Popup(
+            title="",
+            content=OutlinedLabel(
+                text=message, text_color=[0, 0, 0, 1],
+                outline_color=[1, 1, 1, 1],
+                font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
+            ),
+            size_hint=(0.4, 0.2)
+        ).open()
+
     
     try:
-        if password != confirm_pw:
-            debug_print("Passwords have to match")
+        response = requests.post(
+            f"{API_BASE_URL}/register_user", 
+            json={
+            "username": username,
+            "pw_hash": ph.hash(password),
+            "first_name": first_name
+            }, timeout=10
+        )
+        if response.status_code == 409:
+            show_popup("Username already exists")
             return False
         
-        response = requests.post(f"{API_BASE_URL}/register_user", json={
-            "username": username,
-            "password": password,
-            "first_name": first_name
-        })
         response.raise_for_status()
         data = response.json()
         
-        if data["status"] == "success":
-            debug_print(f"User {username} registered successfully with id {data["user_id"]}")
-            result = True
-            return result
-        else:
-            debug_print(f"User was unable to register successfully")
+        if data["status"] != "success":
+            show_popup(data.get("message", "Registration failed"))
             return False
-    
+        debug_print(f"User {username} registered successfully")
+        result = True
+        return result
+
+    except requests.Timeout:
+        show_popup("The server took too long to respond")
+    except requests.ConnectionError:
+        show_popup("Could not connect to the server")
     except requests.HTTPError as e:
         debug_print(f"API error in register_user: {e}")
+        show_popup("Reigstration failed. Please try again")
         return False

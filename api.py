@@ -240,23 +240,33 @@ def reset_user_progress(user_id: int):
 
 class RegisterUser(BaseModel):
     username: str
-    password: str
+    pw_hash: str
     first_name: str
 
 @app.post("/register_user")
-def register_user(user=RegisterUser):
+def register_user(user: RegisterUser):
     conn, cursor = get_db_connection()
     try:
         cursor.execute("USE users;")
         cursor.execute("""
             INSERT INTO users (username, password_hash, first_name) 
             VALUES (%s, %s, %s)""", 
-            (user.username, user.password, user.first_name))
+            (user.username, user.pw_hash, user.first_name))
         conn.commit()
         cursor.execute("SELECT id FROM users WHERE username = %s", (user.username,))
         return {"status": "success"}
+    except mysql.connector.IntegrityError:
+        conn.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="That username is already registered"
+        )
     except mysql.connector.Error as e:
-        return {"status": "error", "message": str(e)}
+        conn.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="The database could not create the account"
+        )
     finally:
         cursor.close()
         conn.close()

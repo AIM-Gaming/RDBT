@@ -8,6 +8,7 @@ class OutlinedLabel(Widget):
     text = StringProperty("")
     texture_size = ListProperty([0, 0])
     font_size = NumericProperty(30)
+    color = ListProperty([1, 1, 1, 1])
     outline_color = ListProperty([0, 0, 0, 1])
     text_color = ListProperty([1, 1, 1, 1])
     outline_width = NumericProperty(0)  # 0 means auto

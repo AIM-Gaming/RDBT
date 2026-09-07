@@ -9,7 +9,7 @@ from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
-from kivy.graphics import Color, Rectangle
+from kivy.uix.image import Image
 
 import os
 import requests
@@ -38,13 +38,13 @@ class LoginScreen(Screen):
             size=(1000, 500),
             pos_hint={"center_x": 0.5, "center_y": 0.5}
         )
-        with board_layout.canvas.before:
-            Color(1, 0, 0, 1)
-            rect = Rectangle(pos=board_layout.pos, size=board_layout.pos)
-        def update_rect(instance, value):
-            rect.pos = instance.pos
-            rect.size = instance.size
-        board_layout.bind(pos=update_rect, size=update_rect)
+        login_board = Image(
+            source=os.path.join(TEMP_ASSETS_DIR, "images", "LoginBoard.png"),
+            size_hint=(1, 1),
+            pos_hint={"x": 0, "y": 0},
+            allow_stretch=True,
+            keep_ratio=False
+        )
 
         # INPUT FIELDS (Middle Position)
         input_box = BoxLayout(
@@ -56,7 +56,7 @@ class LoginScreen(Screen):
         )
 
         login_label = OutlinedLabel(text="Login to Bible Trivia", font_size=40, 
-                                    pos_hint={"center_y": 0.8, "center_x": 0.5},
+                                    pos_hint={"center_y": 0.75, "center_x": 0.5},
                                     outline_width=5)
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
@@ -87,10 +87,12 @@ class LoginScreen(Screen):
                              border=(0, 0, 0, 0))
         home_button.bind(on_release=self.go_back)
 
+        board_layout.add_widget(login_board)
         layout.add_widget(home_button)
         board_layout.add_widget(login_label)
         board_layout.add_widget(input_box)
         board_layout.add_widget(login_button)
+        
         layout.add_widget(board_layout)
         layout.add_widget(register_button)
         
@@ -115,7 +117,16 @@ class LoginScreen(Screen):
         else:
             username = ""
             password = ""
-            popup = Popup(title="", content=Label(text="Invalid username or password"), size_hint=(0.4, 0.3))
+            popup = Popup(title="",
+                content=OutlinedLabel(
+                    text="Invalid username or password", text_color=[0, 0, 0, 1], outline_color=[1, 1, 1, 1],
+                    font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
+                ),
+                background=os.path.join(TEMP_ASSETS_DIR, "images", "Popup4-3.png"),
+                background_color=[1, 1, 1, 1],
+                separator_color=[1, 1, 1, 0],
+                size_hint=(0.4, 0.3)
+            )
             popup.open()
     
     # noinspection PyUnusedLocal

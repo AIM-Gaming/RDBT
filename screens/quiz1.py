@@ -608,7 +608,11 @@ class QuizOne(Screen):
                 self.timer_event.cancel()
             
             content = BoxLayout(orientation="vertical")
-            content.add_widget(Label(text="Do you want to quit? Your progress will be saved."))
+            content.add_widget(OutlinedLabel(
+                text="Do you want to quit? Your progress will be saved.", 
+                text_color=[0, 0, 0, 1], outline_color=[1, 1, 1, 1], 
+                font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
+            ))
 
             self._quit_confirmed = False
 
@@ -639,7 +643,8 @@ class QuizOne(Screen):
 
             content.add_widget(button_box)
             
-            popup = Popup(title="", content=content, size_hint=(0.4, 0.3))
+            popup = Popup(title="", content=content, size_hint=(0.4, 0.3),
+                          background=os.path.join(TEMP_ASSETS_DIR, "images", "Popup4-3.png"))
 
             def on_popup_dismiss(*_args):  # Continue the paused timer if user just dismisses the popup
                 if not getattr(self, "_quit_confirmed", False):

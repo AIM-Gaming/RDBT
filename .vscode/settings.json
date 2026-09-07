@@ -4,5 +4,21 @@
     "code-runner.defaultLanguage": "Python",
     "code-runner.runInTerminal": true,
     "code-runner.saveAllFilesBeforeRun": true,
-    "code-runner.saveFileBeforeRun": true
+    "code-runner.saveFileBeforeRun": true,
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "username": "root",
+            "name": "BibleTrivia",
+            "database": "bible_trivia"
+        }
+    ]
 }
