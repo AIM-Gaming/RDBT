@@ -268,14 +268,38 @@ class RegisterUser(BaseModel):
 def register_user(user: RegisterUser):
     conn, cursor = get_db_connection()
     try:
+        # Insert the new user into the database
         cursor.execute("USE users;")
         cursor.execute("""
             INSERT INTO users (username, password_hash, first_name) 
             VALUES (%s, %s, %s)
             """, (user.username, user.pw_hash, user.first_name))
         conn.commit()
+
+        # Get user ID and insert default settings
         cursor.execute("SELECT id FROM users WHERE username = %s", (user.username,))
         user_id = cursor.fetchone()[0]
+        cursor.execute("""
+            INSERT INTO user_settings (user_id, master_volume, sfx_volume, high_contrast, bible_version, background_music)
+            VALUES (%s, 50, 50, 0, "NIV", "Turn Your Eyes Upon Jesus.mp3")
+        """, (user_id,))
+        conn.commit()
+
+        # Insert default high score
+        cursor.execute("""
+            INSERT INTO user_score (user_id, high_score)
+            VALUES (%s, 0)
+        """, (user_id,))
+
+        # Insert default progress
+        cursor.execute("USE bible_trivia;")
+        cursor.execute("""
+            INSERT INTO user_progress 
+                (user_id, current_bank_index, current_question, score, lives, 
+                time_remaining, last_question, num_questions_per_round, question_id_list)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (user_id, 1, 0, 0, 4, 30, None, 6, set()))
+        conn.commit()
         return {"status": "success", "user_id": user_id}
     except mysql.connector.IntegrityError:
         conn.rollback()

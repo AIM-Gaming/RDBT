@@ -163,8 +163,6 @@ class QuizOne(Screen):
         self.quiz_manager.current_question_index = 0
         
         self._show_ui_elements()
-        conn = None
-        cursor = None
         
         try:
             user_id = App.get_running_app().user_id
