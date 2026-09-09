@@ -1,13 +1,10 @@
 from kivy.app import App
-from kivy.properties import StringProperty, NumericProperty, ListProperty
 from kivy.uix.screenmanager import Screen, NoTransition, FadeTransition
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
-from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
-from kivy.uix.label import Label
 from kivy.uix.image import Image
 
 import os
@@ -16,7 +13,7 @@ from typing import Dict, Tuple, Optional
 
 from widgets.blurred_image import BlurredImage
 from widgets.outlined_label import OutlinedLabel
-from utils import debug_print, save_last_logged_in, load_user_settings, TEMP_ASSETS_DIR, API_BASE_URL, ph
+from utils import debug_print, save_last_logged_in, load_user_settings, show_popup, TEMP_ASSETS_DIR, API_BASE_URL, ph
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -87,11 +84,11 @@ class LoginScreen(Screen):
         home_button.bind(on_release=self.go_back)
 
         board_layout.add_widget(login_board)
-        layout.add_widget(home_button)
         board_layout.add_widget(login_label)
         board_layout.add_widget(input_box)
         board_layout.add_widget(login_button)
-        
+
+        layout.add_widget(home_button)
         layout.add_widget(board_layout)
         layout.add_widget(register_button)
         
@@ -102,6 +99,13 @@ class LoginScreen(Screen):
     def login(self, instance):
         username = self.username_input.text
         password = self.password_input.text
+
+        if not username:
+            show_popup("You ain't anonymous", (0.4, 0.3), "Popup4-3.png")
+            return
+        if not password:
+            show_popup("Enter a password", (0.4, 0.3), "Popup4-3.png")
+            return
         
         user_id, settings = login_user(username, password)
         if user_id:
@@ -116,17 +120,7 @@ class LoginScreen(Screen):
         else:
             username = ""
             password = ""
-            popup = Popup(title="",
-                content=OutlinedLabel(
-                    text="Invalid username or password", text_color=[0, 0, 0, 1], outline_color=[1, 1, 1, 1],
-                    font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
-                ),
-                background=os.path.join(TEMP_ASSETS_DIR, "images", "Popup4-3.png"),
-                background_color=[1, 1, 1, 1],
-                separator_color=[1, 1, 1, 0],
-                size_hint=(0.4, 0.3)
-            )
-            popup.open()
+            show_popup("Invalid username or password", (0.4, 0.3), "Popup4-3.png")
     
     # noinspection PyUnusedLocal
     def open_registration(self, instance):
@@ -159,8 +153,14 @@ def login_user(username: str, password: str) -> Tuple[Optional[int], Optional[Di
                 return None, None  # Deny login if already logged in elsewhere
             try:
                 ph.verify(stored_hash, password)
+
+                # Sets the current user as the last user logged in
                 update_request = requests.post(f"{API_BASE_URL}/users/{user_id}/set_last_logged_in")
                 update_request.raise_for_status()
+
+                # Sets the boolean variable that checks whether a user is currently logged in to TRUE
+                set_log = requests.post(f"{API_BASE_URL}/users/{user_id}/set_logged_in")
+                set_log.raise_for_status()  # (set_log prevents multiple sessions at the same time)
 
                 # Save locally
                 save_last_logged_in(user_id, username)

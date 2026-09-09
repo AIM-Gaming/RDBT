@@ -148,6 +148,27 @@ def check_user_progress(user_id: int) -> bool:
         cursor.close()
         conn.close()
 
+class Username(BaseModel):
+    username: str
+
+@app.get("/login_user")
+def login_user(u: Username):
+    """Log an existing user into the game, either one that is already in existence or a freshly registered account"""
+    conn, cursor = get_db_connection()
+
+    try:
+        cursor.execute("USE users;")
+        cursor.execute(
+            "SELECT id, password_hash, logged_in FROM users WHERE username = %s", (u.username,)
+        )
+        user = cursor.fetchone()
+        return user
+    except mysql.connector.Error:
+        return None
+    finally:
+        cursor.close()
+        conn.close()
+
 @app.get("/users/{user_id}/get_last_question")
 def get_last_question_id(user_id: int):
     """Fetch the last question ID from the database"""
@@ -250,11 +271,12 @@ def register_user(user: RegisterUser):
         cursor.execute("USE users;")
         cursor.execute("""
             INSERT INTO users (username, password_hash, first_name) 
-            VALUES (%s, %s, %s)""", 
-            (user.username, user.pw_hash, user.first_name))
+            VALUES (%s, %s, %s)
+            """, (user.username, user.pw_hash, user.first_name))
         conn.commit()
         cursor.execute("SELECT id FROM users WHERE username = %s", (user.username,))
-        return {"status": "success"}
+        user_id = cursor.fetchone()[0]
+        return {"status": "success", "user_id": user_id}
     except mysql.connector.IntegrityError:
         conn.rollback()
         raise HTTPException(
@@ -271,12 +293,28 @@ def register_user(user: RegisterUser):
         cursor.close()
         conn.close()
 
+@app.post("/users/{user_id}/set_logged_in")
+def set_logged_in(user_id: int):
+    conn, cursor = get_db_connection()
+
+    try:
+        cursor.execute("USE users;")
+        cursor.execute("UPDATE users SET logged_in = 1 WHERE id = %s", (user_id,))
+        conn.commit()
+        return {"status": "success", "user_id": user_id}
+    except mysql.connector.Error as e:
+        return {"status": "error", "detail": str(e)}
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @app.post("/users/{user_id}/log_out")
 def log_user_out(user_id: int):
     conn, cursor = get_db_connection()
     try:
         cursor.execute("USE users;")
-        cursor.execute("UPDATE users SET logged_in = FALSE WHERE id = %s", (user_id,))
+        cursor.execute("UPDATE users SET logged_in = 0 WHERE id = %s", (user_id,))
         conn.commit()
         return {"status": "success", "user_id": user_id}
     except mysql.connector.Error as e:

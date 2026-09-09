@@ -432,7 +432,8 @@ class HomeScreen(Screen):
     # noinspection PyUnusedLocal
     def on_logout(self, instance):
         play_sfx("button_press_1.mp3")
-        debug_print("Logging out user... (home.py)")
+        debug_print("Logging out user (home.py)")
+        App.get_running_app().logout_user()
         App.get_running_app().user_id = None  # Clear the session
 
         # Hide the username label

@@ -4,10 +4,12 @@ import sys
 import json
 import requests
 from argon2 import PasswordHasher
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 from kivy.app import App
+from kivy.uix.popup import Popup
 
 from log import debug_print
+from widgets.outlined_label import OutlinedLabel
 
 
 def resource_path(relative_path):
@@ -78,6 +80,33 @@ def wrap_text(text, width=20, separator="\n"):
     if current_line:
         lines.append(current_line.strip().center(width))
     return separator.join(lines)
+
+def show_popup(message: str, size_hint: Tuple[float, float], bg_image: str | None = None):
+        if bg_image:
+            image_path = os.path.join(TEMP_ASSETS_DIR, "images", bg_image)
+            Popup(
+                title="",
+                content=OutlinedLabel(
+                    text=message, text_color=[1, 1, 1, 1],
+                    outline_color=[0, 0, 0, 1],
+                    font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6},
+                    font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-ExtraBold.ttf")
+                ),
+                size_hint=size_hint,
+                background=image_path,
+                background_color=[1, 1, 1, 1],
+                separator_color=[1, 1, 1, 0],
+            ).open()
+        else:
+            Popup(
+                title="",
+                content=OutlinedLabel(
+                    text=message, text_color=[1, 1, 1, 1],
+                    outline_color=[0, 0, 0, 1],
+                    font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
+                ),
+                size_hint=size_hint
+            ).open()
 
 def save_last_logged_in(user_id, username):
     """Save the last logged-in user locally on the device"""

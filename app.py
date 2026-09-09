@@ -67,6 +67,9 @@ class BibleTriviaApp(App):
         last_user = last_logged_in()
         if last_user:
             self.user_id = last_user.get("user_id")
+            set_log = requests.post(f"{API_BASE_URL}/users/{self.user_id}/set_logged_in")
+            set_log.raise_for_status()
+
             settings = load_user_settings(self.user_id)
             if settings:
                 self.user_settings = settings
@@ -93,6 +96,20 @@ class BibleTriviaApp(App):
             screen.save_progress()
         return True
     
+    def _cleanup_temp_assets(self):
+        """Delete the extracted temp asset folder without crashing if Windows still holds a file open."""
+        if not os.path.exists(TEMP_ASSETS_DIR):
+            return
+
+        def _onerror(func, path, exc_info):
+            debug_print(f"Temp asset cleanup could not remove {path}: {exc_info[1]}")
+
+        try:
+            shutil.rmtree(TEMP_ASSETS_DIR, onerror=_onerror)
+            debug_print(f"Temporary assets directory {TEMP_ASSETS_DIR} deleted")
+        except Exception as exc:
+            debug_print(f"Error removing temporary assets directory {TEMP_ASSETS_DIR}: {exc}")
+
     def on_stop(self):
         """Triggered when app is about to close"""
         screen = self.get_running_screen()
@@ -130,10 +147,8 @@ class BibleTriviaApp(App):
         except Exception as e:
             debug_print(f"Error closing IntroScreen player: {e}")
         
-        # Clean up temporary songs directory
-        if os.path.exists(TEMP_ASSETS_DIR):
-            shutil.rmtree(TEMP_ASSETS_DIR)
-            debug_print(f"Temporary assets directory {TEMP_ASSETS_DIR} deleted")
+        # Clean up temporary assets, but do not crash if Windows still has a file open.
+        self._cleanup_temp_assets()
     
     def update_last_active(self, dt):
         """Updates the last active timestamp for the logged-in user."""
