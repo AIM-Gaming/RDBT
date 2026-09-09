@@ -14,6 +14,7 @@ from typing import Dict, Tuple, Optional
 from widgets.blurred_image import BlurredImage
 from widgets.outlined_label import OutlinedLabel
 from utils import debug_print, save_last_logged_in, load_user_settings, show_popup, TEMP_ASSETS_DIR, API_BASE_URL, ph
+
 class LoginScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

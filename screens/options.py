@@ -16,7 +16,7 @@ from kivy.uix.popup import Popup
 import os
 import requests
 
-from utils import debug_print, update_music_volume, update_sfx_volume, TEMP_ASSETS_DIR, API_BASE_URL
+from utils import debug_print, update_music_volume, update_sfx_volume, show_popup, TEMP_ASSETS_DIR, API_BASE_URL
 from widgets.carousel_selector import CarouselSelector
 from widgets.outlined_label import OutlinedLabel
 from widgets.blurred_image import BlurredImage
@@ -190,15 +190,7 @@ class OptionsScreen(Screen):
         current_app = App.get_running_app()
         user_id = current_app.user_id
         if user_id is None:
-            logged_out_popup = Popup(
-                title="Login Error", 
-                content=Label(
-                    text="Cannot save settings as a guest\n Log in to save these changes to your account!",
-                    halign='center',
-                    valign='middle'
-                ),
-                size_hint=(0.4, 0.2))
-            logged_out_popup.open()
+            show_popup("Cannot save settings as a guest\n Log in to save these changes to your account!", (0.4, 0.2), "Popup4-2.png")
             return
 
         try:
@@ -229,11 +221,7 @@ class OptionsScreen(Screen):
             current_app.user_settings["background_music"] = new_background_music
 
             debug_print("User settings successfully updated")
-            success_popup = Popup(
-                title="", 
-                content=Label(text="Successfully saved settings!"),
-                size_hint=(0.4, 0.2))
-            success_popup.open()
+            show_popup("Successfully saved settings!", (0.4, 0.3), "Popup4-3.png")
 
             self.manager.current = "HomeScreen"
         except requests.exceptions.RequestException as e:
@@ -244,12 +232,7 @@ class OptionsScreen(Screen):
                     error_msg = e.response.json().get("detail", e.repsonse.text)
                 except Exception:
                     error_msg = str(e)
-            error_popup = Popup(
-                title="Save Failed",
-                content=Label(text=f"Failed to save settings:\n{error_msg}", halign='center', valign='middle'),
-                size_hint=(0.6, 0.3)
-            )
-            error_popup.open()
+            show_popup(f"Failed to save settings:\n{error_msg}", (0.6, 0.3), "Popup4-2.png")
         except requests.HTTPError as e:
             debug_print(f"Error with saving settings for user: {e}")
     

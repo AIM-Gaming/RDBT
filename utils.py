@@ -76,9 +76,9 @@ def wrap_text(text, width=20, separator="\n"):
         else:
             # Append current line and start a new one
             lines.append(current_line.strip().center(width))
-            current_line = word + " "
+            current_line = word + " "  # Add a space after the word to separate it from the next
     if current_line:
-        lines.append(current_line.strip().center(width))
+        lines.append(current_line.strip().center(width))  # Doesn't center properly
     return separator.join(lines)
 
 def show_popup(message: str, size_hint: Tuple[float, float], bg_image: str | None = None):
@@ -88,7 +88,7 @@ def show_popup(message: str, size_hint: Tuple[float, float], bg_image: str | Non
                 title="",
                 content=OutlinedLabel(
                     text=message, text_color=[1, 1, 1, 1],
-                    outline_color=[0, 0, 0, 1],
+                    outline_color=[0, 0, 0, 1], outline_width=2,
                     font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6},
                     font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-ExtraBold.ttf")
                 ),

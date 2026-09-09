@@ -13,7 +13,7 @@ import os
 import requests
 from ffpyplayer.player import MediaPlayer
 
-from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL, play_sfx, last_logged_in
+from utils import debug_print, TEMP_ASSETS_DIR, API_BASE_URL, play_sfx, last_logged_in, show_popup
 from quiz_manager import QuizManager
 from widgets.outlined_label import OutlinedLabel
 
@@ -320,27 +320,24 @@ class HomeScreen(Screen):
         user_id = App.get_running_app().user_id
 
         if user_id is None:
-            logged_out_popup = Popup(
-                title="Logged out",
-                content=Label(
-                    text="Create an account to play the game (for now)!"
-                ),
-                size_hint=(0.4, 0.2)
-            )
-            logged_out_popup.open()
+            show_popup("Create an account to play the game (for now)!", (0.4, 0.2), "Popup4-2.png")
             return
         
         try:
             response = requests.get(f"{API_BASE_URL}/users/{user_id}/check_progress")
             response.raise_for_status()
             has_progress = response.json()
-            show_popup = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session  # Same logic as resume button
+            has_resume_prompt = has_progress and self.quiz_manager.game_over and self.has_left_game_this_session  # Same logic as resume button
             
             # If there is progress
-            if show_popup:
+            if has_resume_prompt:
                 debug_print("Progress exists")
                 content = BoxLayout(orientation="vertical")
-                content.add_widget(Label(text="Unresolved game found. Continue?"))
+                content.add_widget(OutlinedLabel(
+                    text="Unresolved game found. Continue?", outline_width=2,
+                    font_size=25, outline_color=[0, 0, 0, 1], text_color=[1, 1, 1, 1],
+                    font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-ExtraBold.ttf")
+                ))
 
                 BUTTON_HEIGHT = 180
                 BUTTON_WIDTH = 320
@@ -373,7 +370,10 @@ class HomeScreen(Screen):
                 button_box.add_widget(Widget(size_hint_x=1)) # Right spacer
                 content.add_widget(button_box)
 
-                popup = Popup(title="", content=content, size_hint=(0.6, 0.3))
+                popup = Popup(title="", content=content, size_hint=(0.6, 0.3),
+                    background=os.path.join(TEMP_ASSETS_DIR, "images", "Popup4-2.png"),
+                    background_color=[1, 1, 1, 1], separator_color=[1, 1, 1, 0]
+                )
                 popup.open()  # Prompt the user with the decision to start a new game or resume the previous one
             else:
                 debug_print("There is no progress")
@@ -393,14 +393,7 @@ class HomeScreen(Screen):
         debug_print(f"Attempting to resume game for user_id: {user_id}")
 
         if user_id is None:
-            logged_out_popup = Popup(
-                title="Logged out",
-                content=Label(
-                    text="Cannot resume a separate game on a guest account"
-                ),
-                size_hint=(0.4, 0.2)
-            )
-            logged_out_popup.open()
+            show_popup("Cannot resume a separate game on a guest account", (0.4, 0.2), "Popup4-2.png")
             return
         
         try:

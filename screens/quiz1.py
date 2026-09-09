@@ -5,7 +5,6 @@ from kivy.uix.image import Image
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
-# from kivy.core.text import LabelBase
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
@@ -610,8 +609,10 @@ class QuizOne(Screen):
             content = BoxLayout(orientation="vertical")
             content.add_widget(OutlinedLabel(
                 text="Do you want to quit? Your progress will be saved.", 
-                text_color=[0, 0, 0, 1], outline_color=[1, 1, 1, 1], 
-                font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6}
+                text_color=[1, 1, 1, 1], outline_color=[0, 0, 0, 1], 
+                font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6},
+                font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-ExtraBold.ttf"),
+                outline_width=2
             ))
 
             self._quit_confirmed = False
