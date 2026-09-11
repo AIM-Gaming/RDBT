@@ -13,18 +13,30 @@ class QuizManager:
         """
         Properties of each game:
             self.user_id: An int variable bound to the App's user_id that is used to store game data to the user's account
+
             self.questions: A list of dicts containing all questions, answers, and scripture references for the current bank index
+
             self.game_over: A boolean checking whether the game is over
+
             self.players: A dict of indeterminate value for now
         
+            
         Properties of each question:
             current_bank_index: An int variable that controls the set of questions used
+
             current_question: An int variable linked to the ID of the displayed question that controls which question is shown
+
             score: An int variable that accumulates with each selected correct answer and tracks how far the player got in the game
+
             lives: An int variable that lowers with every incorrect answer and determines how far a player gets in the game
+
             time_remaining: An int variable that limits how long a player spends on a question
+
             num_questions_per_round: An int variable that limits how many questions out of the set are selected
-            last_question: An int variable linked to the ID of the displayed question that is saved for continuing previous games on the same question
+
+            last_question: An int variable linked to the ID of the displayed question that is saved for 
+                            continuing previous games on the same question
+
             question_id_list: A set()/list that tracks how many questions of the set have been answered by the player
         """
         self.bible_version = bible_version
