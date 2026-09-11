@@ -81,7 +81,8 @@ class QuizOne(Screen):
         self.question_label = OutlinedLabel(text="Quiz starting!", size_hint=(0.8, 0.2),
                                             pos_hint={"center_x": 0.5, "center_y": 0.7},
                                             opacity=0, outline_color=[0, 0, 0, 1], text_color=[1, 1, 1, 1],
-                                            halign='center', valign='middle')
+                                            halign='center', valign='middle', outline_width=3,
+                                            font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-Bold.ttf"))
         self.layout.add_widget(self.question_label)
         
         # Answer buttons grid
@@ -96,7 +97,9 @@ class QuizOne(Screen):
         
         # Result label
         self.result_label = OutlinedLabel(text="Result Goes Here", halign='center', valign='middle',
-                                        size_hint=(0.8, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, opacity=0)
+                                        size_hint=(0.8, 0.1), pos_hint={"center_x": 0.5, "y": 0.2}, opacity=0,
+                                        font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-MediumItalic.ttf"),
+                                        outline_width=2)
         self.layout.add_widget(self.result_label)
         
         # Quit button
@@ -476,10 +479,10 @@ class QuizOne(Screen):
             self.result_label.text = "Shame."
             self.update_lives_display()
         
-        if result["scripture_references"] and not result["is_correct"]:
-            if isinstance(result["scripture_references"], str):
-                scripture_references = [result["scripture_references"]]
-            else:
+        if result["scripture_references"] and not result["is_correct"]:  # If an incorrect answer was chosen and there exist bible refs
+            if isinstance(result["scripture_references"], str):  # If there is only one reference
+                scripture_references = [result["scripture_references"]]  # Put it in a list
+            else:  # If it's a list of references
                 scripture_references = [ref for ref in result["scripture_references"] if ref is not None]
             debug_print(f"Scripture references: {scripture_references}")
             
@@ -605,13 +608,17 @@ class QuizOne(Screen):
             if self.timer_event:
                 self.timer_event.cancel()
             
-            content = BoxLayout(orientation="vertical")
+            content = BoxLayout(
+                orientation="vertical", 
+                padding=(0, 35, 0, 0),  # For the formatting of the quit label
+                spacing=10
+            )
             content.add_widget(OutlinedLabel(
-                text="Do you want to quit? Your progress will be saved.", 
+                text=wrap_text("Do you want to quit? Your progress will be saved.", 35), 
                 text_color=[1, 1, 1, 1], outline_color=[0, 0, 0, 1], 
                 font_size=30, pos_hint={"center_x": 0.5, "center_y": 0.6},
                 font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-ExtraBold.ttf"),
-                outline_width=2
+                outline_width=2, halign='center', valign='middle'
             ))
 
             self._quit_confirmed = False
@@ -644,7 +651,8 @@ class QuizOne(Screen):
             content.add_widget(button_box)
             
             popup = Popup(title="", content=content, size_hint=(0.4, 0.3),
-                          background=os.path.join(TEMP_ASSETS_DIR, "images", "Popup4-3.png"))
+                          background=os.path.join(TEMP_ASSETS_DIR, "images", "Popup4-3.png"),
+                          background_color=[1, 1, 1, 1], separator_color=[1, 1, 1, 0])
 
             def on_popup_dismiss(*_args):  # Continue the paused timer if user just dismisses the popup
                 if not getattr(self, "_quit_confirmed", False):
