@@ -29,21 +29,24 @@ class OutlinedLabel(Widget):
                   outline_color=self._update_canvas,
                   text_color=self._update_canvas,
                   center=self._update_canvas,
-                  size=self._update_canvas)
+                  size=self._update_canvas,
+                  halign=self._update_canvas,
+                  valign=self._update_canvas)
         self._update_canvas()
     
     # noinspection PyUnusedLocal
     def _update_canvas(self, *args):
         self.canvas.clear()
         label = CoreLabel(text=self.text, font_size=self.font_size, markup=self.markup,
-                  font_name=self.font_style or 'Roboto')
+                  font_name=self.font_style or 'Roboto',
+                  halign=self.halign, valign=self.valign)
         label.refresh()
         texture = label.texture
         self.texture_size = texture.size
-        
+
         width = int(self.outline_width or (self.font_size * 0.05))
         width = max(1, width)
-        
+
         with (self.canvas):
             for dx in range(-width, width + 1):
                 for dy in range(-width, width + 1):

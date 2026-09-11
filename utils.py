@@ -61,24 +61,30 @@ def play_sfx(file_name):
 
 
 def wrap_text(text, width=20, separator="\n"):
-    """ Wrap text to insert newlines after every `width` character."""
+    """Wrap text on word boundaries without adding invisible padding to each line."""
     if not isinstance(text, str):
         text = str(text)
-    
+
+    if not text:
+        return ""
+
     lines = []
     current_line = ""
-    
+
     for word in text.split():
-        # Check if adding the word would exceed the width
-        if len(current_line) + len(word) + 1 <= width:
-            # Add word to the current line
-            current_line += (word + " ")
+        if not current_line:
+            current_line = word
+            continue
+
+        if len(current_line) + 1 + len(word) <= width:
+            current_line += " " + word
         else:
-            # Append current line and start a new one
-            lines.append(current_line.strip().center(width))
-            current_line = word + " "  # Add a space after the word to separate it from the next
+            lines.append(current_line)
+            current_line = word
+
     if current_line:
-        lines.append(current_line.strip().center(width))  # Doesn't center properly
+        lines.append(current_line)
+
     return separator.join(lines)
 
 def show_popup(message: str, size_hint: Tuple[float, float], bg_image: str | None = None):

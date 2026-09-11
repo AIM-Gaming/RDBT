@@ -80,7 +80,8 @@ class QuizOne(Screen):
         # Question label
         self.question_label = OutlinedLabel(text="Quiz starting!", size_hint=(0.8, 0.2),
                                             pos_hint={"center_x": 0.5, "center_y": 0.7},
-                                            opacity=0, outline_color=[0, 0, 0, 1], text_color=[1, 1, 1, 1])
+                                            opacity=0, outline_color=[0, 0, 0, 1], text_color=[1, 1, 1, 1],
+                                            halign='center', valign='middle')
         self.layout.add_widget(self.question_label)
         
         # Answer buttons grid

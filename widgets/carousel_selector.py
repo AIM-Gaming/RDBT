@@ -75,6 +75,9 @@ class CarouselSelector(BoxLayout):
         return wrap_text(text=item.rsplit('.', 1)[0], width=20) if item.lower().endswith('.mp3') else wrap_text(text=item, width=20)
     
     def _update_display_width(self, instance, value):
-        # Update width for the instance, add padding
-        instance.width = instance.texture_size[0] + 20
+        # Update width for the instance, add padding.
+        # Guard against the label re-triggering its own texture-size callback.
+        target_width = instance.texture_size[0] + 20
+        if abs(instance.width - target_width) > 1:
+            instance.width = target_width
     
