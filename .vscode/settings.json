@@ -18,7 +18,7 @@
             "driver": "MySQL",
             "username": "root",
             "name": "BibleTrivia",
-            "database": "users",
+            "database": "bible_trivia",
             "password": "SQL0202Otown--!"
         }
     ]

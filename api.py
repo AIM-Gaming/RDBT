@@ -408,13 +408,16 @@ def update_user_high_constrast(user_id: int, value):
         cursor.close()
         conn.close()
 
+class UserScore(BaseModel):
+    score: int
+
 @app.post("/users/{user_id}/update_high_score")
-def update_user_high_score(user_id: int, score: int):
+def update_user_high_score(user_id: int, s: UserScore):
     conn, cursor = get_db_connection()
 
     try:
         cursor.execute("USE users;")
-        cursor.execute("UPDATE user_score SET high_score = %s WHERE user_id = %s", (score, user_id))
+        cursor.execute("UPDATE user_score SET high_score = %s WHERE user_id = %s", (s.score, user_id))
         conn.commit()
         return {"status": "success", "user_id": user_id}
     except mysql.connector.Error as e:
@@ -473,12 +476,16 @@ def get_all_questions(bank_id: int, selected_bible_version: str = 'NIV'):
                 a.answer_id,
                 a.answer_text,
                 a.is_correct,
-                IF(a.is_correct, NULL, (
-                    SELECT GROUP_CONCAT(DISTINCT sr2.bible_ref SEPARATOR ', ')
-                    FROM scripture_references sr2
-                    JOIN answers a2 ON sr2.answer_id = a2.answer_id
-                    WHERE a2.question_id = a.question_id AND a2.is_correct = 1
-                )) AS bible_ref
+                CASE
+                    WHEN a.is_correct = 1 THEN sr.bible_ref
+                    ELSE (
+                        SELECT GROUP_CONCAT(DISTINCT sr2.bible_ref SEPARATOR ', ')
+                        FROM scripture_references sr2
+                        JOIN answers a2 ON sr2.answer_id = a2.answer_id
+                        WHERE a2.question_id = a.question_id
+                        AND a2.is_correct = 1
+                    )
+                END AS bible_ref
             FROM questions q
             JOIN answers a ON q.id = a.question_id
             LEFT JOIN scripture_references sr ON a.answer_id = sr.answer_id
@@ -514,12 +521,16 @@ def get_questions_by_ids(request: QuestionIdsRequest) -> List[Dict[str, Any]]:
                 a.answer_id,
                 a.answer_text,
                 a.is_correct,
-                IF(a.is_correct, NULL, (
-                    SELECT GROUP_CONCAT(DISTINCT sr2.bible_ref SEPARATOR ', ')
-                    FROM scripture_references sr2
-                    JOIN answers a2 ON sr2.answer_id = a2.answer_id
-                    WHERE a2.question_id = a.question_id AND a2.is_correct = 1
-                )) AS bible_ref
+                CASE
+                    WHEN a.is_correct = 1 THEN sr.bible_ref
+                    ELSE (
+                        SELECT GROUP_CONCAT(DISTINCT sr2.bible_ref SEPARATOR ', ')
+                        FROM scripture_references sr2
+                        JOIN answers a2 ON sr2.answer_id = a2.answer_id
+                        WHERE a2.question_id = a.question_id
+                        AND a2.is_correct = 1
+                    )
+                END AS bible_ref
             FROM questions q
             JOIN answers a ON q.id = a.question_id
             LEFT JOIN scripture_References sr ON a.answer_id = sr.answer_id

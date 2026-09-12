@@ -285,7 +285,7 @@ class QuizOne(Screen):
         answers: List[Dict[str, Any]] = question_data["answers"]
         correct_answers = [ans for ans in answers if ans["is_correct"]]
         incorrect_answers = [ans for ans in answers if not ans["is_correct"]]
-        answer_references = {ans["answer_text"]: ans["bible_ref"] for ans in incorrect_answers}
+        
         
         # Design adjustments and result label reset
         self.result_label.text = ""
@@ -296,6 +296,7 @@ class QuizOne(Screen):
         if correct_answers:
             chosen_correct = random.choice(correct_answers)
             selected_correct = [chosen_correct["answer_text"]]
+            scripture_ref = chosen_correct["bible_ref"]
             debug_print(f"Randomly selected correct answer for options: {chosen_correct['answer_text']}")
         else:
             debug_print("ERROR: NO CORRECT ANSWERS")
@@ -328,7 +329,6 @@ class QuizOne(Screen):
             button.disabled = False
             
             is_correct = answer in selected_correct
-            scripture_ref = answer_references.get(answer, "")
             button.on_press = lambda btn=button, correct=is_correct, ref=scripture_ref, ans=answer: self._handle_button_press(btn, correct, ref, ans)
             debug_print(f"---------------\nButton #{button_index} answer: {answer}\n---------------")
             button_index += 1
@@ -449,7 +449,7 @@ class QuizOne(Screen):
         self.selected_button.background_color = self.flicker_color if self.flicker_state else self.original_color
     
     # noinspection PyUnusedLocal
-    def check_answer(self, is_correct, scripture_references=None, selected_text=None):
+    def check_answer(self, is_correct, scripture_references=None, selected_ans=None):
         """Checks if the answer provided by the user is correct."""
         debug_print("check_answer() accessed")
         if self.timer_event:
@@ -468,7 +468,7 @@ class QuizOne(Screen):
         self.flicker_state = False  # Tracks whether to use original color or flicker color
         self.flicker_event = Clock.schedule_interval(self.flicker_button, 0.2)
         
-        result = self.quiz_manager.check_answer(selected_text)
+        result = self.quiz_manager.check_answer(selected_ans)
         
         # Check if the selected answer is correct
         if result["is_correct"]:
@@ -479,11 +479,11 @@ class QuizOne(Screen):
             self.result_label.text = "Shame."
             self.update_lives_display()
         
-        if result["scripture_references"] and not result["is_correct"]:  # If an incorrect answer was chosen and there exist bible refs
-            if isinstance(result["scripture_references"], str):  # If there is only one reference
-                scripture_references = [result["scripture_references"]]  # Put it in a list
+        if scripture_references and not result["is_correct"]:  # If an incorrect answer was chosen and there exist bible refs
+            if isinstance(scripture_references, str):  # If the reference is a string
+                scripture_references = [scripture_references]  # Put it in a list (for proper display)
             else:  # If it's a list of references
-                scripture_references = [ref for ref in result["scripture_references"] if ref is not None]
+                scripture_references = [ref for ref in scripture_references if ref is not None]
             debug_print(f"Scripture references: {scripture_references}")
             
             self.result_label.text += f" [{' | '.join(scripture_references)}]"

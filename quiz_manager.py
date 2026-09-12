@@ -114,12 +114,10 @@ class QuizManager:
         
         # self.last_question_id = current_question["question_id"]
         answers = current_question["answers"]
-        
         correct_answers = [ans["answer_text"] for ans in answers if ans["is_correct"]]
-        scripture_refs = [ans["bible_ref"] for ans in answers if ans["answer_text"] == selected_answer]
-        
+
         is_correct = selected_answer in correct_answers
-        debug_print(f"Selected answer: {selected_answer}; Correct answer(s): {correct_answers}")
+        debug_print(f"Selected answer is {is_correct}: {selected_answer}; Correct answer(s): {correct_answers}")
         
         if is_correct:
             debug_print(f"Correct answer selected: {selected_answer}")
@@ -134,8 +132,7 @@ class QuizManager:
             self.current_question_index += 1
         
         return {
-            "is_correct": is_correct,
-            "scripture_references": scripture_refs if scripture_refs else None
+            "is_correct": is_correct
         }
     
     def next_question(self):
