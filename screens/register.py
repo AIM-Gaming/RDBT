@@ -62,25 +62,37 @@ class RegisterScreen(Screen):
                                     outline_width=5, font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-Black.ttf"))
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
-                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 1.05})
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 1.05},
+                                        font_size=50, font_name="PixelSans",
+                                        background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"),
+                                        background_active=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"))
         input_box.add_widget(self.username_input)
         
         self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(None, None), 
-                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 0.7})
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 0.7},
+                                        font_size=50, font_name="PixelSans",
+                                        background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"),
+                                        background_active=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"))
         input_box.add_widget(self.password_input)
 
         self.confirm_password_input = TextInput(hint_text="Confirm Password", password=True, multiline=False, size_hint=(None, None), 
-                                                width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 0.33})
+                                                width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 0.33},
+                                                font_size=50, font_name="PixelSans",
+                                                background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"),
+                                                background_active=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"))
         input_box.add_widget(self.confirm_password_input)
 
         self.first_name_input = TextInput(hint_text="First Name", multiline=False, size_hint=(None, None), 
-                                          width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 0})
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, pos_hint={"center_y": 0},
+                                        font_size=50, font_name="PixelSans",
+                                        background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"),
+                                        background_active=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"))
         input_box.add_widget(self.first_name_input)
         
         register_button = Button(size=(332.8, 187.2), size_hint=(None, None), pos_hint={"center_x": 0.5, "center_y": 0},
-                                 background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
-                                 background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
-                                 border=(0, 0, 0, 0))
+                                background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButton.png"),
+                                background_down=os.path.join(TEMP_ASSETS_DIR, "images", "RegisterButtonPressed.png"),
+                                border=(0, 0, 0, 0))
         register_button.bind(on_release=self.register)
         
         login_button = Button(size=(270, 118.5), size_hint=(None, None), pos_hint={"center_x": 0.9, "top": 0.95},

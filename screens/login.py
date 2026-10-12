@@ -6,6 +6,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.textinput import TextInput
 from kivy.uix.image import Image
+from kivy.core.text import LabelBase
 
 import os
 import requests
@@ -51,17 +52,25 @@ class LoginScreen(Screen):
             pos_hint={"center_x": 0.5, "center_y": 0.46},
             spacing=FIELD_SPACING
         )
+        LabelBase.register(
+            name="PixelSans",
+            fn_regular=os.path.join(TEMP_ASSETS_DIR, "fonts", "VT323-Regular.ttf")
+        )
 
         login_label = OutlinedLabel(text="Login to Bible Trivia", font_size=40, 
                                     pos_hint={"center_y": 1, "center_x": 0.5},
                                     outline_width=5, font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-Black.ttf"))
         
         self.username_input = TextInput(hint_text="Username", multiline=False, size_hint=(None, None), 
-                                        width=FIELD_WIDTH, height=FIELD_HEIGHT)
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, font_size=50, font_name="PixelSans",
+                                        background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"),
+                                        background_active=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"))
         input_box.add_widget(self.username_input)
 
         self.password_input = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(None, None), 
-                                        width=FIELD_WIDTH, height=FIELD_HEIGHT)
+                                        width=FIELD_WIDTH, height=FIELD_HEIGHT, font_size=50, font_name="PixelSans",
+                                        background_normal=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"),
+                                        background_active=os.path.join(TEMP_ASSETS_DIR, "images", "WoodWearInput.png"))
         input_box.add_widget(self.password_input)
         
         self.home_screen = None
