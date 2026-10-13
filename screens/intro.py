@@ -64,6 +64,7 @@ class IntroScreen(Screen):
             self.rect = Rectangle(texture=self.texture, size=self.size, pos=self.pos)
         
         self.bind(size=self.update_rect, pos=self.update_rect)
+        self.update_rect()
     
     # noinspection PyUnusedLocal
     def update_rect(self, *args):

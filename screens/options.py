@@ -7,11 +7,9 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from kivy.uix.widget import Widget
-from kivy.uix.label import Label
 from kivy.uix.slider import Slider
 from kivy.uix.spinner import Spinner
 from kivy.uix.checkbox import CheckBox
-from kivy.uix.popup import Popup
 
 import os
 import requests

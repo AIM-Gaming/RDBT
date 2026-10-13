@@ -45,6 +45,7 @@ class BibleTriviaApp(App):
         self.game_over = True
     
     def build(self):
+        Window.maximize()
         # Bind user input events to update last activity
         Window.bind(on_motion=self.on_user_activity)
         Window.bind(on_keyboard=self.on_user_activity)

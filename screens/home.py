@@ -44,7 +44,11 @@ class HomeScreen(Screen):
         self.layout.add_widget(self.title_card)
 
         # Version label
-        self.version_label = OutlinedLabel(text=f"v{App.get_running_app().version}", font_size=30, size_hint=(None, None), size=(200, 50), pos_hint={"left": 0.05, "bottom": 0.05}, outline_color=[0, 0, 0, 1], text_color=[1, 1, 1, 1])
+        self.version_label = OutlinedLabel(text=f"v{App.get_running_app().version}", 
+                                font_size=30, size_hint=(None, None), size=(200, 50), 
+                                pos_hint={"left": 0.05, "bottom": 0.05}, outline_color=[0, 0, 0, 1], 
+                                text_color=[1, 1, 1, 1], 
+                                font_style=os.path.join(TEMP_ASSETS_DIR, "fonts", "Poppins-Regular.ttf"))
         self.layout.add_widget(self.version_label)
         
         # Username label
